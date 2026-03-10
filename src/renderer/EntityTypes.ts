@@ -38,7 +38,7 @@ export interface ItemAppearance {
   i: number;
 }
 
-export interface Appearance {
+export interface Tileset {
   tileset: string;
   mobs?: MobAppearance[];
   items?: ItemAppearance[];
@@ -54,6 +54,6 @@ export interface ProjectData {
   };
   data: {
     mobTypes: MobType[];
-    appearances: Appearance[];
+    appearances: Tileset[];
   };
 }
