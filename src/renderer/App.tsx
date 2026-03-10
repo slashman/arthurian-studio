@@ -121,6 +121,7 @@ function App() {
           />
       ) : (
           <EditAppearances 
+            projectData={projectData}
             items={projectData.data.appearances}
             selectedAppearanceIndex={selectedAppearanceIndex}
             onAddItem={handleAddItem}
@@ -139,20 +140,24 @@ function App() {
         />
       )}
 
-      {editingItem && activeTab === 'appearances' && editingSubtype === 'mobs' && (
+      {editingItem && activeTab === 'appearances' && editingSubtype === 'mobs' && selectedAppearanceIndex !== null && (
         <EditMobAppearanceModal 
           editingItem={editingItem}
           editIndex={editIndex}
+          projectData={projectData}
+          tileset={projectData.data.appearances[selectedAppearanceIndex].tileset}
           onCancel={() => { setEditingItem(null); setEditingSubtype(null); }}
           onConfirm={saveEdit}
           onUpdateItem={setEditingItem}
         />
       )}
 
-      {editingItem && activeTab === 'appearances' && editingSubtype === 'items' && (
+      {editingItem && activeTab === 'appearances' && editingSubtype === 'items' && selectedAppearanceIndex !== null && (
         <EditItemAppearanceModal 
           editingItem={editingItem}
           editIndex={editIndex}
+          projectData={projectData}
+          tileset={projectData.data.appearances[selectedAppearanceIndex].tileset}
           onCancel={() => { setEditingItem(null); setEditingSubtype(null); }}
           onConfirm={saveEdit}
           onUpdateItem={setEditingItem}

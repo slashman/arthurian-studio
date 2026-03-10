@@ -1,6 +1,12 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, protocol, net } = require('electron')
 const path = require('path')
 const fs = require('fs')
+const { pathToFileURL } = require('url')
+
+// Register protocol before app is ready
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'media', privileges: { bypassCSP: true, standard: true, secure: true, supportFetchAPI: true } }
+])
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -21,6 +27,34 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Use protocol.handle (Electron 25+)
+  protocol.handle('media', (request) => {
+    try {
+        const url = new URL(request.url)
+        // url.pathname will be /D:/path on Windows or /Users/path on Mac
+        let filePath = decodeURIComponent(url.pathname)
+        
+        // On Windows, we need to strip the leading slash from /D:/...
+        if (process.platform === 'win32' && filePath.startsWith('/') && /^\/[a-zA-Z]:/.test(filePath)) {
+            filePath = filePath.slice(1)
+        }
+
+        console.log('[Media Protocol] URL:', request.url)
+        console.log('[Media Protocol] Path:', filePath)
+
+        if (!fs.existsSync(filePath)) {
+            console.error('[Media Protocol] File NOT found:', filePath)
+            return new Response('File Not Found', { status: 404 })
+        }
+        
+        const fileUrl = pathToFileURL(filePath).toString()
+        return net.fetch(fileUrl)
+    } catch (e) {
+        console.error('[Media Protocol] Error:', e)
+        return new Response('Internal Error', { status: 500 })
+    }
+  })
+
   createWindow()
 
   app.on('activate', () => {

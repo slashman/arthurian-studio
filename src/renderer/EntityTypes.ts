@@ -1,3 +1,20 @@
+export interface ArthurianProject {
+  studioVersion: string;
+  arthurianVersion: string;
+  appearancesFile: string;
+  mobTypesFile: string;
+  tileWidth: number;
+  tileHeight: number;
+  tilesets: TilesetDefinition[];
+}
+
+export interface TilesetDefinition {
+  id: string;
+  file: string;
+  tileWidth?: number;
+  tileHeight?: number;
+}
+
 export interface UseEffect {
   type: string;
 }
@@ -46,12 +63,7 @@ export interface Tileset {
 
 export interface ProjectData {
   filePath: string;
-  project: {
-    studioVersion: string;
-    arthurianVersion: string;
-    appearancesFile: string;
-    mobTypesFile: string;
-  };
+  project: ArthurianProject;
   data: {
     mobTypes: MobType[];
     appearances: Tileset[];
