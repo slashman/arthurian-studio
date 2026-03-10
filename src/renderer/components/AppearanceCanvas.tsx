@@ -25,19 +25,35 @@ const AppearanceCanvas: React.FC<AppearanceCanvasProps> = ({
   const lastSlash = Math.max(projectData.filePath.lastIndexOf('/'), projectData.filePath.lastIndexOf('\\'));
   const projectDir = projectData.filePath.substring(0, lastSlash);
   const imgPathRelative = tilesetDef?.file || '';
-  let fullImgPath = projectDir + (projectDir.includes('/') ? '/' : '\\') + imgPathRelative;
-  const mediaUrl = `media:///${fullImgPath.replace(/\\/g, '/')}`;
+  
+  // Only build URL if we have a valid path fragment
+  const mediaUrl = imgPathRelative 
+    ? `media:///${(projectDir + (projectDir.includes('/') ? '/' : '\\') + imgPathRelative).replace(/\\/g, '/')}`
+    : null;
 
   useEffect(() => {
-    if (!canvasRef.current || !mediaUrl) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    if (!mediaUrl) {
+        // Draw an "X" for invalid/missing appearances
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#f44';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(size * 0.2, size * 0.2);
+        ctx.lineTo(size * 0.8, size * 0.8);
+        ctx.moveTo(size * 0.8, size * 0.2);
+        ctx.lineTo(size * 0.2, size * 0.8);
+        ctx.stroke();
+        return;
+    }
 
     const img = new Image();
     img.src = mediaUrl;
     img.onload = () => {
-        const canvas = canvasRef.current!;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
         const columns = Math.floor(img.width / tileWidth);
         if (columns === 0) return;
 
@@ -48,7 +64,16 @@ const AppearanceCanvas: React.FC<AppearanceCanvasProps> = ({
         ctx.imageSmoothingEnabled = false; 
         ctx.drawImage(img, x, y, tileWidth, tileHeight, 0, 0, canvas.width, canvas.height);
     };
-  }, [mediaUrl, frameIndex, tileWidth, tileHeight]);
+    img.onerror = () => {
+        // Draw a question mark if the image fails to load
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#f44';
+        ctx.font = `bold ${size * 0.8}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('?', size / 2, size / 2);
+    }
+  }, [mediaUrl, frameIndex, tileWidth, tileHeight, size]);
 
   return (
     <div style={{ background: '#000', padding: '5px', border: '1px solid #555', minWidth: `${size}px`, minHeight: `${size}px` }}>

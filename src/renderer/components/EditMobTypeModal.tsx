@@ -1,8 +1,10 @@
 import React from 'react'
-import { MobType, MobItem } from '../EntityTypes'
+import { MobType, MobItem, ProjectData } from '../EntityTypes'
 import { Plus, Trash2 } from 'lucide-react'
+import AppearanceCanvas from './AppearanceCanvas'
 
 interface EditMobTypeModalProps {
+  projectData: ProjectData;
   editingItem: MobType;
   editIndex: number;
   onCancel: () => void;
@@ -11,6 +13,7 @@ interface EditMobTypeModalProps {
 }
 
 const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({ 
+  projectData,
   editingItem, 
   editIndex, 
   onCancel, 
@@ -34,44 +37,104 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
     onUpdateItem({ ...editingItem, items: newItems });
   };
 
+  const resolveAppearance = (id: string): { tilesetId: string, frameIndex: number } | null => {
+    if (!id) return null;
+    for (const app of projectData.data.appearances) {
+        // Check mobs
+        const mobApp = app.mobs?.find(m => m.id === id);
+        if (mobApp) {
+            return {
+                tilesetId: app.tileset,
+                frameIndex: mobApp.d && mobApp.d.length > 0 ? mobApp.d[0] : 0
+            };
+        }
+        // Check items
+        const itemApp = app.items?.find(i => i.id === id);
+        if (itemApp) {
+            return {
+                tilesetId: app.tileset,
+                frameIndex: itemApp.i
+            };
+        }
+    }
+    return null;
+  };
+
+  const appearancePreview = resolveAppearance(editingItem.appearance);
+  const corpsePreview = resolveAppearance(editingItem.corpse);
+  const portraitPreview = resolveAppearance(editingItem.portrait);
+
   return (
     <div className="modal-overlay">
-      <div className="modal-content" style={{ width: '600px', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div className="modal-content" style={{ width: '650px', maxHeight: '90vh', overflowY: 'auto' }}>
         <h3>{editIndex >= 0 ? 'Edit' : 'Add'} Mob Type</h3>
         
+        {/* Preview Row */}
+        <div style={{ display: 'flex', gap: '30px', marginBottom: '25px', padding: '10px', background: '#1a1a1a', borderRadius: '4px', border: '1px solid #333' }}>
+            <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '5px' }}>Appearance</div>
+                <AppearanceCanvas 
+                    projectData={projectData}
+                    tilesetId={appearancePreview?.tilesetId || ''}
+                    frameIndex={appearancePreview?.frameIndex || 0}
+                    size={64}
+                />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '5px' }}>Corpse</div>
+                <AppearanceCanvas 
+                    projectData={projectData}
+                    tilesetId={corpsePreview?.tilesetId || ''}
+                    frameIndex={corpsePreview?.frameIndex || 0}
+                    size={64}
+                />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '5px' }}>Portrait</div>
+                <AppearanceCanvas 
+                    projectData={projectData}
+                    tilesetId={portraitPreview?.tilesetId || ''}
+                    frameIndex={portraitPreview?.frameIndex || 0}
+                    size={64}
+                />
+            </div>
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
             <div className="form-group">
                 <label>ID</label>
                 <input 
-                  value={editingItem.id || ''} 
-                  onChange={(e) => onUpdateItem({...editingItem, id: e.target.value})}
+                value={editingItem.id || ''} 
+                onChange={(e) => onUpdateItem({...editingItem, id: e.target.value})}
                 />
             </div>
 
             <div className="form-group">
                 <label>Name</label>
                 <input 
-                  value={editingItem.name || ''} 
-                  onChange={(e) => onUpdateItem({...editingItem, name: e.target.value})}
+                value={editingItem.name || ''} 
+                onChange={(e) => onUpdateItem({...editingItem, name: e.target.value})}
                 />
             </div>
 
             <div className="form-group">
                 <label>Appearance ID</label>
                 <input 
-                  value={editingItem.appearance || ''} 
-                  onChange={(e) => onUpdateItem({...editingItem, appearance: e.target.value})}
+                value={editingItem.appearance || ''} 
+                onChange={(e) => onUpdateItem({...editingItem, appearance: e.target.value})}
                 />
             </div>
 
             <div className="form-group">
                 <label>Corpse ID</label>
                 <input 
-                  value={editingItem.corpse || ''} 
-                  onChange={(e) => onUpdateItem({...editingItem, corpse: e.target.value})}
+                value={editingItem.corpse || ''} 
+                onChange={(e) => onUpdateItem({...editingItem, corpse: e.target.value})}
                 />
             </div>
+        </div>
 
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '15px' }}>
             <div className="form-group">
                 <label>HP</label>
                 <input 
@@ -107,7 +170,9 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
                   onChange={(e) => onUpdateItem({...editingItem, speed: parseInt(e.target.value) || 0})}
                 />
             </div>
+        </div>
 
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
             <div className="form-group">
                 <label>Weapon</label>
                 <input 
@@ -117,7 +182,7 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
             </div>
 
             <div className="form-group">
-                <label>Portrait</label>
+                <label>Portrait ID</label>
                 <input 
                   value={editingItem.portrait || ''} 
                   onChange={(e) => onUpdateItem({...editingItem, portrait: e.target.value})}

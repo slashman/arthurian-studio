@@ -114,6 +114,7 @@ function App() {
 
       {activeTab === 'mobTypes' ? (
           <EditMobTypes 
+            projectData={projectData}
             items={projectData.data.mobTypes}
             onAddItem={() => handleAddItem()}
             onSave={handleSave}
@@ -132,6 +133,7 @@ function App() {
 
       {editingItem && activeTab === 'mobTypes' && (
         <EditMobTypeModal 
+          projectData={projectData}
           editingItem={editingItem}
           editIndex={editIndex}
           onCancel={() => setEditingItem(null)}
