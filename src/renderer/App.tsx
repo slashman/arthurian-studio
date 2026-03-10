@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { ProjectData, Appearance } from './EntityTypes'
+import { ProjectData } from './EntityTypes'
 import Sidebar from './components/Sidebar'
-import MainArea from './components/MainArea'
+import EditMobTypes from './components/EditMobTypes'
+import EditAppearances from './components/EditAppearances'
 import EditMobTypeModal from './components/EditMobTypeModal'
 import EditMobAppearanceModal from './components/EditMobAppearanceModal'
 import EditItemAppearanceModal from './components/EditItemAppearanceModal'
@@ -111,14 +112,22 @@ function App() {
         onSelectAppearance={handleSelectAppearance}
       />
 
-      <MainArea 
-        activeTab={activeTab}
-        items={projectData.data[activeTab]}
-        selectedAppearanceIndex={selectedAppearanceIndex}
-        onAddItem={handleAddItem}
-        onSave={handleSave}
-        onEditItem={handleEditItem}
-      />
+      {activeTab === 'mobTypes' ? (
+          <EditMobTypes 
+            items={projectData.data.mobTypes}
+            onAddItem={() => handleAddItem()}
+            onSave={handleSave}
+            onEditItem={handleEditItem}
+          />
+      ) : (
+          <EditAppearances 
+            items={projectData.data.appearances}
+            selectedAppearanceIndex={selectedAppearanceIndex}
+            onAddItem={handleAddItem}
+            onSave={handleSave}
+            onEditItem={handleEditItem}
+          />
+      )}
 
       {editingItem && activeTab === 'mobTypes' && (
         <EditMobTypeModal 
