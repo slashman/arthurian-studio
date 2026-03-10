@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { ProjectData } from './EntityTypes'
 import Sidebar from './components/Sidebar'
 import MainArea from './components/MainArea'
-import EditModal from './components/EditModal'
+import EditMobTypeModal from './components/EditMobTypeModal'
+import EditAppearancesModal from './components/EditAppearancesModal'
 import ProjectLoader from './components/ProjectLoader'
 
 function App() {
@@ -78,9 +79,18 @@ function App() {
         onEditItem={handleEditItem}
       />
 
-      {editingItem && (
-        <EditModal 
-          activeTab={activeTab}
+      {editingItem && activeTab === 'mobTypes' && (
+        <EditMobTypeModal 
+          editingItem={editingItem}
+          editIndex={editIndex}
+          onCancel={() => setEditingItem(null)}
+          onConfirm={saveEdit}
+          onUpdateItem={setEditingItem}
+        />
+      )}
+
+      {editingItem && activeTab === 'appearances' && (
+        <EditAppearancesModal 
           editingItem={editingItem}
           editIndex={editIndex}
           onCancel={() => setEditingItem(null)}
