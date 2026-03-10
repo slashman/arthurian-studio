@@ -1,0 +1,6 @@
+{
+    "studioVersion": "0.1.0",
+    "arthurianVersion": "0.11.0",
+    "appearancesFile: "data/appearances.json",
+    "mobTypesFile": "data/mobTypes.json"
+}
