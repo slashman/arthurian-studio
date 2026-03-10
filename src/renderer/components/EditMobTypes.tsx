@@ -1,10 +1,10 @@
 import React from 'react'
 import { Plus, Save } from 'lucide-react'
-import { MobType, ProjectData, Appearance, MobAppearance } from '../EntityTypes'
+import { MobType } from '../EntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
+import { useProject } from '../ProjectContext'
 
 interface EditMobTypesProps {
-  projectData: ProjectData;
   items: MobType[];
   onAddItem: () => void;
   onSave: () => void;
@@ -12,12 +12,14 @@ interface EditMobTypesProps {
 }
 
 const EditMobTypes: React.FC<EditMobTypesProps> = ({ 
-  projectData,
   items, 
   onAddItem, 
   onSave, 
   onEditItem 
 }) => {
+  const { projectData } = useProject();
+
+  if (!projectData) return null;
 
   const getMobAppearance = (appearanceId: string): { tilesetId: string, frameIndex: number } | null => {
     for (const app of projectData.data.appearances) {
@@ -59,7 +61,6 @@ const EditMobTypes: React.FC<EditMobTypesProps> = ({
                 <td style={{ padding: '4px' }}>
                     {appearance ? (
                         <AppearanceCanvas 
-                            projectData={projectData}
                             tilesetId={appearance.tilesetId}
                             frameIndex={appearance.frameIndex}
                             size={32}

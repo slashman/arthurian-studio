@@ -1,20 +1,21 @@
 import React, { useRef, useEffect } from 'react'
-import { ProjectData } from '../EntityTypes'
+import { useProject } from '../ProjectContext'
 
 interface AppearanceCanvasProps {
-  projectData: ProjectData;
   tilesetId: string;
   frameIndex: number;
   size?: number;
 }
 
 const AppearanceCanvas: React.FC<AppearanceCanvasProps> = ({ 
-  projectData, 
   tilesetId, 
   frameIndex, 
   size = 64 
 }) => {
+  const { projectData } = useProject();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  if (!projectData) return null;
 
   // Find tileset definition
   const tilesetDef = projectData.project.tilesets.find(ts => ts.id === tilesetId);

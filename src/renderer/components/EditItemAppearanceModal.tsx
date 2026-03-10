@@ -1,11 +1,11 @@
 import React from 'react'
-import { ItemAppearance, ProjectData } from '../EntityTypes'
+import { ItemAppearance } from '../EntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
+import { useProject } from '../ProjectContext'
 
 interface EditItemAppearanceModalProps {
   editingItem: ItemAppearance;
   editIndex: number;
-  projectData: ProjectData;
   tileset: string;
   onCancel: () => void;
   onConfirm: () => void;
@@ -15,12 +15,15 @@ interface EditItemAppearanceModalProps {
 const EditItemAppearanceModal: React.FC<EditItemAppearanceModalProps> = ({ 
   editingItem, 
   editIndex,
-  projectData,
   tileset,
   onCancel, 
   onConfirm, 
   onUpdateItem 
 }) => {
+  const { projectData } = useProject();
+
+  if (!projectData) return null;
+
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -28,7 +31,6 @@ const EditItemAppearanceModal: React.FC<EditItemAppearanceModalProps> = ({
         
         <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
             <AppearanceCanvas 
-                projectData={projectData} 
                 tilesetId={tileset} 
                 frameIndex={editingItem.i || 0} 
             />

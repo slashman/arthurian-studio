@@ -1,12 +1,12 @@
 import React from 'react'
-import { MobAppearance, ProjectData } from '../EntityTypes'
+import { MobAppearance } from '../EntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import { Plus, Trash2 } from 'lucide-react'
+import { useProject } from '../ProjectContext'
 
 interface EditMobAppearanceModalProps {
   editingItem: MobAppearance;
   editIndex: number;
-  projectData: ProjectData;
   tileset: string;
   onCancel: () => void;
   onConfirm: () => void;
@@ -16,12 +16,14 @@ interface EditMobAppearanceModalProps {
 const EditMobAppearanceModal: React.FC<EditMobAppearanceModalProps> = ({ 
   editingItem, 
   editIndex,
-  projectData,
   tileset,
   onCancel, 
   onConfirm, 
   onUpdateItem 
 }) => {
+  const { projectData } = useProject();
+
+  if (!projectData) return null;
   
   const handleFrameChange = (direction: 'u' | 'd' | 'l' | 'r', frameIdx: number, newVal: number) => {
       const frames = [...(editingItem[direction] || [])];
@@ -50,7 +52,6 @@ const EditMobAppearanceModal: React.FC<EditMobAppearanceModalProps> = ({
                   <div key={idx} style={{ background: '#2d2d2d', padding: '5px', borderRadius: '4px' }}>
                       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '5px' }}>
                         <AppearanceCanvas 
-                            projectData={projectData} 
                             tilesetId={tileset} 
                             frameIndex={frame} 
                             size={48} 

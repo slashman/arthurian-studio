@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { ProjectData } from './EntityTypes'
 import Sidebar from './components/Sidebar'
 import EditMobTypes from './components/EditMobTypes'
 import EditAppearances from './components/EditAppearances'
@@ -7,9 +6,11 @@ import EditMobTypeModal from './components/EditMobTypeModal'
 import EditMobAppearanceModal from './components/EditMobAppearanceModal'
 import EditItemAppearanceModal from './components/EditItemAppearanceModal'
 import ProjectLoader from './components/ProjectLoader'
+import { useProject } from './ProjectContext'
+import { ProjectData } from './EntityTypes'
 
 function App() {
-  const [projectData, setProjectData] = useState<ProjectData | null>(null)
+  const { projectData, setProjectData } = useProject();
   const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances'>('mobTypes')
   const [selectedAppearanceIndex, setSelectedAppearanceIndex] = useState<number | null>(null)
   
@@ -114,7 +115,6 @@ function App() {
 
       {activeTab === 'mobTypes' ? (
           <EditMobTypes 
-            projectData={projectData}
             items={projectData.data.mobTypes}
             onAddItem={() => handleAddItem()}
             onSave={handleSave}
@@ -122,7 +122,6 @@ function App() {
           />
       ) : (
           <EditAppearances 
-            projectData={projectData}
             items={projectData.data.appearances}
             selectedAppearanceIndex={selectedAppearanceIndex}
             onAddItem={handleAddItem}
@@ -133,7 +132,6 @@ function App() {
 
       {editingItem && activeTab === 'mobTypes' && (
         <EditMobTypeModal 
-          projectData={projectData}
           editingItem={editingItem}
           editIndex={editIndex}
           onCancel={() => setEditingItem(null)}
@@ -146,7 +144,6 @@ function App() {
         <EditMobAppearanceModal 
           editingItem={editingItem}
           editIndex={editIndex}
-          projectData={projectData}
           tileset={projectData.data.appearances[selectedAppearanceIndex].tileset}
           onCancel={() => { setEditingItem(null); setEditingSubtype(null); }}
           onConfirm={saveEdit}
@@ -158,7 +155,6 @@ function App() {
         <EditItemAppearanceModal 
           editingItem={editingItem}
           editIndex={editIndex}
-          projectData={projectData}
           tileset={projectData.data.appearances[selectedAppearanceIndex].tileset}
           onCancel={() => { setEditingItem(null); setEditingSubtype(null); }}
           onConfirm={saveEdit}

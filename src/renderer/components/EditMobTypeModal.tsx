@@ -1,10 +1,10 @@
 import React from 'react'
-import { MobType, MobItem, ProjectData } from '../EntityTypes'
+import { MobType, MobItem } from '../EntityTypes'
 import { Plus, Trash2 } from 'lucide-react'
 import AppearanceCanvas from './AppearanceCanvas'
+import { useProject } from '../ProjectContext'
 
 interface EditMobTypeModalProps {
-  projectData: ProjectData;
   editingItem: MobType;
   editIndex: number;
   onCancel: () => void;
@@ -13,14 +13,16 @@ interface EditMobTypeModalProps {
 }
 
 const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({ 
-  projectData,
   editingItem, 
   editIndex, 
   onCancel, 
   onConfirm, 
   onUpdateItem 
 }) => {
-  
+  const { projectData } = useProject();
+
+  if (!projectData) return null;
+
   const handleItemChange = (index: number, field: keyof MobItem, value: string | number) => {
     const newItems = [...(editingItem.items || [])];
     newItems[index] = { ...newItems[index], [field]: value };
@@ -74,7 +76,6 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
             <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '5px' }}>Appearance</div>
                 <AppearanceCanvas 
-                    projectData={projectData}
                     tilesetId={appearancePreview?.tilesetId || ''}
                     frameIndex={appearancePreview?.frameIndex || 0}
                     size={64}
@@ -83,7 +84,6 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
             <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '5px' }}>Corpse</div>
                 <AppearanceCanvas 
-                    projectData={projectData}
                     tilesetId={corpsePreview?.tilesetId || ''}
                     frameIndex={corpsePreview?.frameIndex || 0}
                     size={64}
@@ -92,7 +92,6 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
             <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '5px' }}>Portrait</div>
                 <AppearanceCanvas 
-                    projectData={projectData}
                     tilesetId={portraitPreview?.tilesetId || ''}
                     frameIndex={portraitPreview?.frameIndex || 0}
                     size={64}

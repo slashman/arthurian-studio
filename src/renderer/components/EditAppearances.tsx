@@ -1,10 +1,10 @@
 import React from 'react'
 import { Plus, Save } from 'lucide-react'
-import { Appearance, MobType, ProjectData } from '../EntityTypes'
+import { Appearance } from '../EntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
+import { useProject } from '../ProjectContext'
 
 interface EditAppearancesProps {
-  projectData: ProjectData;
   items: Appearance[];
   selectedAppearanceIndex: number | null;
   onAddItem: (listType: 'mobs' | 'items') => void;
@@ -13,13 +13,13 @@ interface EditAppearancesProps {
 }
 
 const EditAppearances: React.FC<EditAppearancesProps> = ({ 
-  projectData,
   items, 
   selectedAppearanceIndex,
   onAddItem, 
   onSave, 
   onEditItem 
 }) => {
+  const { projectData } = useProject();
 
   if (selectedAppearanceIndex === null) {
       return (
@@ -47,20 +47,18 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
       <table>
         <thead>
           <tr>
-            <th>ID</th>
             <th style={{ width: '40px' }}>U</th>
             <th style={{ width: '40px' }}>D</th>
             <th style={{ width: '40px' }}>L</th>
             <th style={{ width: '40px' }}>R</th>
+            <th>ID</th>
           </tr>
         </thead>
         <tbody>
           {(selectedAppearance.mobs || []).map((mob, idx) => (
             <tr key={idx} onClick={() => onEditItem(mob, idx, 'mobs')}>
-              <td>{mob.id}</td>
               <td style={{ padding: '4px' }}>
                   <AppearanceCanvas 
-                    projectData={projectData} 
                     tilesetId={selectedAppearance.tileset} 
                     frameIndex={mob.u && mob.u.length > 0 ? mob.u[0] : 0} 
                     size={32} 
@@ -68,7 +66,6 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
               </td>
               <td style={{ padding: '4px' }}>
                   <AppearanceCanvas 
-                    projectData={projectData} 
                     tilesetId={selectedAppearance.tileset} 
                     frameIndex={mob.d && mob.d.length > 0 ? mob.d[0] : 0} 
                     size={32} 
@@ -76,7 +73,6 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
               </td>
               <td style={{ padding: '4px' }}>
                   <AppearanceCanvas 
-                    projectData={projectData} 
                     tilesetId={selectedAppearance.tileset} 
                     frameIndex={mob.l && mob.l.length > 0 ? mob.l[0] : 0} 
                     size={32} 
@@ -84,12 +80,12 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
               </td>
               <td style={{ padding: '4px' }}>
                   <AppearanceCanvas 
-                    projectData={projectData} 
                     tilesetId={selectedAppearance.tileset} 
                     frameIndex={mob.r && mob.r.length > 0 ? mob.r[0] : 0} 
                     size={32} 
                   />
               </td>
+              <td>{mob.id}</td>
             </tr>
           ))}
         </tbody>
@@ -112,7 +108,6 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
             <tr key={idx} onClick={() => onEditItem(item, idx, 'items')}>
               <td style={{ padding: '4px' }}>
                   <AppearanceCanvas 
-                    projectData={projectData} 
                     tilesetId={selectedAppearance.tileset} 
                     frameIndex={item.i} 
                     size={32} 
