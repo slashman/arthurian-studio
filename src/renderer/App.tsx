@@ -1,36 +1,37 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { FolderOpen, Users, Palette, Plus, Save } from 'lucide-react'
+import { ProjectData, MobType, Appearance } from './EntityTypes'
 
 function App() {
-  const [projectData, setProjectData] = useState(null)
-  const [activeTab, setActiveTab] = useState('mobTypes')
-  const [editingItem, setEditingItem] = useState(null)
-  const [editIndex, setEditIndex] = useState(-1)
+  const [projectData, setProjectData] = useState<ProjectData | null>(null)
+  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances'>('mobTypes')
+  const [editingItem, setEditingItem] = useState<any | null>(null)
+  const [editIndex, setEditIndex] = useState<number>(-1)
 
   const handleOpenProject = async () => {
     const data = await window.electron.openProject()
     if (data) {
-      setProjectData(data)
+      setProjectData(data as ProjectData)
     }
   }
 
   const handleSave = async () => {
-      // Logic to save the data back to the file
-      // In a real app we'd save the specific file that was changed
-      // For this prototype, let's just assume we're saving the whole project state if needed
-      // Actually, we'll save the specific list we are editing
+      if (!projectData) return;
+
       const { filePath, project } = projectData;
-      const projectDir = filePath.substring(0, filePath.lastIndexOf('\\')) // Simple path manipulation
+      // Extract directory path carefully
+      const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
+      const projectDir = filePath.substring(0, lastSlash);
       
-      let targetFile = activeTab === 'mobTypes' ? project.mobTypesFile : project.appearancesFile;
-      // Resolve path
-      const fullPath = projectDir + '\\' + targetFile;
+      const targetFileRelative = activeTab === 'mobTypes' ? project.mobTypesFile : project.appearancesFile;
+      const fullPath = projectDir + (projectDir.includes('/') ? '/' : '\\') + targetFileRelative;
       
-      await window.electron.saveData(fullPath, projectData.data[activeTab])
+      const dataToSave = projectData.data[activeTab];
+      await window.electron.saveData(fullPath, dataToSave)
       alert('Saved!')
   }
 
-  const handleEditItem = (item, index) => {
+  const handleEditItem = (item: any, index: number) => {
     setEditingItem({ ...item })
     setEditIndex(index)
   }
@@ -41,12 +42,17 @@ function App() {
   }
 
   const saveEdit = () => {
+    if (!projectData) return;
     const newData = { ...projectData }
+    const currentList = [...newData.data[activeTab]] as any[];
+
     if (editIndex >= 0) {
-      newData.data[activeTab][editIndex] = editingItem
+      currentList[editIndex] = editingItem
     } else {
-      newData.data[activeTab].push(editingItem)
+      currentList.push(editingItem)
     }
+    
+    (newData.data as any)[activeTab] = currentList;
     setProjectData(newData)
     setEditingItem(null)
   }
@@ -111,21 +117,21 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {items.map((item, index) => (
+            {(items as any[]).map((item, index) => (
               <tr key={index} onClick={() => handleEditItem(item, index)}>
                 {activeTab === 'mobTypes' ? (
                   <>
-                    <td>{item.id}</td>
-                    <td>{item.name}</td>
-                    <td>{item.hp}</td>
-                    <td>{item.damage}</td>
+                    <td>{(item as MobType).id}</td>
+                    <td>{(item as MobType).name}</td>
+                    <td>{(item as MobType).hp}</td>
+                    <td>{(item as MobType).damage}</td>
                   </>
                 ) : (
                   <>
-                    <td>{item.tileset}</td>
+                    <td>{(item as Appearance).tileset}</td>
                     <td>
-                      {item.mobs ? `${item.mobs.length} mobs` : ''} 
-                      {item.items ? `${item.items.length} items` : ''}
+                      {(item as Appearance).mobs ? `${(item as Appearance).mobs?.length} mobs ` : ''} 
+                      {(item as Appearance).items ? `${(item as Appearance).items?.length} items` : ''}
                     </td>
                   </>
                 )}
@@ -146,7 +152,7 @@ function App() {
                   value={activeTab === 'mobTypes' ? (editingItem.id || '') : (editingItem.tileset || '')} 
                   onChange={(e) => {
                       const val = e.target.value;
-                      setEditingItem(prev => activeTab === 'mobTypes' ? {...prev, id: val} : {...prev, tileset: val})
+                      setEditingItem((prev: any) => activeTab === 'mobTypes' ? {...prev, id: val} : {...prev, tileset: val})
                   }}
                 />
             </div>
@@ -165,7 +171,7 @@ function App() {
                         <input 
                           type="number"
                           value={editingItem.hp || 0} 
-                          onChange={(e) => setEditingItem({...editingItem, hp: parseInt(e.target.value)})}
+                          onChange={(e) => setEditingItem({...editingItem, hp: parseInt(e.target.value) || 0})}
                         />
                     </div>
                     <div className="form-group">
@@ -173,7 +179,7 @@ function App() {
                         <input 
                           type="number"
                           value={editingItem.damage || 0} 
-                          onChange={(e) => setEditingItem({...editingItem, damage: parseInt(e.target.value)})}
+                          onChange={(e) => setEditingItem({...editingItem, damage: parseInt(e.target.value) || 0})}
                         />
                     </div>
                 </>
