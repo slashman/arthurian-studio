@@ -106,6 +106,7 @@
 	},
 	{
 		"id": "doorHL1",
+		"type": "linkedDoor",
 		"closedAppearance": "doorHL1",
 		"openAppearance": "doorOpenHL1",
 		"fixed": true,
@@ -114,6 +115,7 @@
 	},
 	{
 		"id": "doorHR1",
+		"type": "linkedDoor",
 		"closedAppearance": "doorHR1",
 		"openAppearance": "doorOpenHR1",
 		"name": "Door",
@@ -121,6 +123,7 @@
 	},
 	{
 		"id": "doorVL1",
+		"type": "linkedDoor",
 		"closedAppearance": "doorVL1",
 		"openAppearance": "doorOpenVL1",
 		"name": "Door",
@@ -128,6 +131,7 @@
 	},
 	{
 		"id": "doorVR1",
+		"type": "linkedDoor",
 		"closedAppearance": "doorVR1",
 		"openAppearance": "doorOpenVR1",
 		"fixed": true,

@@ -62,7 +62,7 @@ export interface Item {
   description?: string;
   value?: number;
   weight?: number;
-  type?: 'lightSource' | 'container' | string;
+  type?: 'lightSource' | 'container' | 'linkedDoor' | string;
   damage?: number;
   defense?: number;
   flyAppearance?: string;
