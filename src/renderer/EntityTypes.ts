@@ -44,12 +44,12 @@ export interface MobType {
 }
 
 export interface ItemEffect {
-  type: string;
+  type: 'unlockDoor' | 'recoverHP' | 'playMusic' | 'toggleLit' | 'reduceHunger' | string;
   hungerRecovery?: number;
   transformTo?: string;
   audioAssetKey?: string;
   offset?: number;
-  timingType?: string;
+  timingType?: 'fixed' | 'manual' | string;
   fragments?: number[];
   fragmentLength?: number;
   keys?: number;
@@ -62,13 +62,13 @@ export interface Item {
   description?: string;
   value?: number;
   weight?: number;
-  type?: string;
+  type?: 'lightSource' | 'container' | string;
   damage?: number;
   defense?: number;
   flyAppearance?: string;
   throwable?: boolean;
   range?: number;
-  flyType?: string;
+  flyType?: 'rotate' | 'straight' | string;
   usesProjectileType?: string;
   stackLimit?: number;
   capacity?: number;
@@ -85,7 +85,7 @@ export interface Item {
   lightRadius?: number;
   appearances?: { [key: string]: string };
   solid?: boolean;
-  containerType?: string;
+  containerType?: 'medium' | 'backpack' | string;
 }
 
 export interface MobAppearance {

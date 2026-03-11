@@ -74,7 +74,15 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
         </div>
         <div className="form-group">
             <label>Type</label>
-            <input value={editingItem.type || ''} onChange={(e) => onUpdateItem({...editingItem, type: e.target.value})} />
+            <select 
+                style={{ width: '100%', backgroundColor: '#3c3c3c', color: 'white', border: '1px solid #555', padding: '6px' }}
+                value={editingItem.type || ''} 
+                onChange={(e) => onUpdateItem({...editingItem, type: e.target.value})}
+            >
+                <option value="">Standard</option>
+                <option value="lightSource">Light Source</option>
+                <option value="container">Container</option>
+            </select>
         </div>
         <div className="form-group">
             <label>Value</label>
@@ -118,8 +126,16 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
             </div>
         </div>
         <div className="form-group">
-            <label>Fly Type (straight, rotate)</label>
-            <input value={editingItem.flyType || ''} onChange={(e) => onUpdateItem({...editingItem, flyType: e.target.value})} />
+            <label>Fly Type</label>
+            <select 
+                style={{ width: '100%', backgroundColor: '#3c3c3c', color: 'white', border: '1px solid #555', padding: '6px' }}
+                value={editingItem.flyType || ''} 
+                onChange={(e) => onUpdateItem({...editingItem, flyType: e.target.value})}
+            >
+                <option value="">None</option>
+                <option value="straight">Straight</option>
+                <option value="rotate">Rotate</option>
+            </select>
         </div>
         <div className="form-group">
             <label>Projectile Type</label>
@@ -140,7 +156,15 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
         </div>
         <div className="form-group">
             <label>Container Type</label>
-            <input value={editingItem.containerType || ''} onChange={(e) => onUpdateItem({...editingItem, containerType: e.target.value})} />
+            <select 
+                style={{ width: '100%', backgroundColor: '#3c3c3c', color: 'white', border: '1px solid #555', padding: '6px' }}
+                value={editingItem.containerType || ''} 
+                onChange={(e) => onUpdateItem({...editingItem, containerType: e.target.value})}
+            >
+                <option value="">None</option>
+                <option value="medium">Medium</option>
+                <option value="backpack">Backpack</option>
+            </select>
         </div>
         <div className="form-group">
             <label>Light Radius</label>
@@ -194,7 +218,18 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
         <div className="form-group" style={{ gridColumn: 'span 2' }}>
             <label>Effect Type</label>
-            <input value={editingItem.effect?.type || ''} onChange={(e) => handleEffectChange('type', e.target.value)} />
+            <select 
+                style={{ width: '100%', backgroundColor: '#3c3c3c', color: 'white', border: '1px solid #555', padding: '6px' }}
+                value={editingItem.effect?.type || ''} 
+                onChange={(e) => handleEffectChange('type', e.target.value)}
+            >
+                <option value="">None</option>
+                <option value="unlockDoor">Unlock Door</option>
+                <option value="recoverHP">Recover HP</option>
+                <option value="playMusic">Play Music</option>
+                <option value="toggleLit">Toggle Lit</option>
+                <option value="reduceHunger">Reduce Hunger</option>
+            </select>
         </div>
         <div className="form-group">
             <label>Hunger Recovery</label>
@@ -213,8 +248,16 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
             <input type="number" value={editingItem.effect?.offset || 0} onChange={(e) => handleEffectChange('offset', parseInt(e.target.value) || 0)} />
         </div>
         <div className="form-group">
-            <label>Timing Type (fixed, manual)</label>
-            <input value={editingItem.effect?.timingType || ''} onChange={(e) => handleEffectChange('timingType', e.target.value)} />
+            <label>Timing Type</label>
+            <select 
+                style={{ width: '100%', backgroundColor: '#3c3c3c', color: 'white', border: '1px solid #555', padding: '6px' }}
+                value={editingItem.effect?.timingType || ''} 
+                onChange={(e) => handleEffectChange('timingType', e.target.value)}
+            >
+                <option value="">None</option>
+                <option value="fixed">Fixed</option>
+                <option value="manual">Manual</option>
+            </select>
         </div>
         <div className="form-group">
             <label>Fragment Length</label>
