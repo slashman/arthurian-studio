@@ -19,7 +19,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
   onUpdateItem 
 }) => {
   const { projectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'general' | 'combat' | 'interaction' | 'raw'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'combat' | 'interaction' | 'effect' | 'raw'>('general');
 
   if (!projectData) return null;
 
@@ -150,6 +150,14 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
             <label>Is Book</label>
             <input type="checkbox" checked={!!editingItem.isBook} onChange={(e) => onUpdateItem({...editingItem, isBook: e.target.checked})} />
         </div>
+        <div className="form-group">
+            <label>Linked X</label>
+            <input type="number" value={editingItem.linked?.x || 0} onChange={(e) => onUpdateItem({...editingItem, linked: { x: parseInt(e.target.value) || 0, y: editingItem.linked?.y || 0 }})} />
+        </div>
+        <div className="form-group">
+            <label>Linked Y</label>
+            <input type="number" value={editingItem.linked?.y || 0} onChange={(e) => onUpdateItem({...editingItem, linked: { x: editingItem.linked?.x || 0, y: parseInt(e.target.value) || 0 }})} />
+        </div>
         {editingItem.isBook && (
             <>
                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
@@ -163,9 +171,53 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
                 </div>
             </>
         )}
+    </div>
+  );
+
+  const renderEffectTab = () => (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
         <div className="form-group" style={{ gridColumn: 'span 2' }}>
             <label>Effect Type</label>
             <input value={editingItem.effect?.type || ''} onChange={(e) => handleEffectChange('type', e.target.value)} />
+        </div>
+        <div className="form-group">
+            <label>Hunger Recovery</label>
+            <input type="number" value={editingItem.effect?.hungerRecovery || 0} onChange={(e) => handleEffectChange('hungerRecovery', parseInt(e.target.value) || 0)} />
+        </div>
+        <div className="form-group">
+            <label>Transform To (Item ID)</label>
+            <input value={editingItem.effect?.transformTo || ''} onChange={(e) => handleEffectChange('transformTo', e.target.value)} />
+        </div>
+        <div className="form-group">
+            <label>Audio Asset Key</label>
+            <input value={editingItem.effect?.audioAssetKey || ''} onChange={(e) => handleEffectChange('audioAssetKey', e.target.value)} />
+        </div>
+        <div className="form-group">
+            <label>Offset</label>
+            <input type="number" value={editingItem.effect?.offset || 0} onChange={(e) => handleEffectChange('offset', parseInt(e.target.value) || 0)} />
+        </div>
+        <div className="form-group">
+            <label>Timing Type (fixed, manual)</label>
+            <input value={editingItem.effect?.timingType || ''} onChange={(e) => handleEffectChange('timingType', e.target.value)} />
+        </div>
+        <div className="form-group">
+            <label>Fragment Length</label>
+            <input type="number" value={editingItem.effect?.fragmentLength || 0} onChange={(e) => handleEffectChange('fragmentLength', parseInt(e.target.value) || 0)} />
+        </div>
+        <div className="form-group">
+            <label>Keys</label>
+            <input type="number" value={editingItem.effect?.keys || 0} onChange={(e) => handleEffectChange('keys', parseInt(e.target.value) || 0)} />
+        </div>
+        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+            <label>Fragments (comma separated numbers)</label>
+            <textarea 
+                style={{ width: '100%', backgroundColor: '#3c3c3c', color: 'white', border: '1px solid #555', padding: '6px' }}
+                value={editingItem.effect?.fragments?.join(', ') || ''} 
+                onChange={(e) => {
+                    const vals = e.target.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+                    handleEffectChange('fragments', vals);
+                }}
+            />
         </div>
     </div>
   );
@@ -220,6 +272,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
             <button className={`tab-btn ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')} style={{ padding: '8px 15px', background: activeTab === 'general' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>General</button>
             <button className={`tab-btn ${activeTab === 'combat' ? 'active' : ''}`} onClick={() => setActiveTab('combat')} style={{ padding: '8px 15px', background: activeTab === 'combat' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>Combat/Flying</button>
             <button className={`tab-btn ${activeTab === 'interaction' ? 'active' : ''}`} onClick={() => setActiveTab('interaction')} style={{ padding: '8px 15px', background: activeTab === 'interaction' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>Special</button>
+            <button className={`tab-btn ${activeTab === 'effect' ? 'active' : ''}`} onClick={() => setActiveTab('effect')} style={{ padding: '8px 15px', background: activeTab === 'effect' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>Effect</button>
             <button className={`tab-btn ${activeTab === 'raw' ? 'active' : ''}`} onClick={() => setActiveTab('raw')} style={{ padding: '8px 15px', background: activeTab === 'raw' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>JSON</button>
         </div>
 
@@ -227,6 +280,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
             {activeTab === 'general' && renderGeneralTab()}
             {activeTab === 'combat' && renderCombatTab()}
             {activeTab === 'interaction' && renderInteractionTab()}
+            {activeTab === 'effect' && renderEffectTab()}
             {activeTab === 'raw' && renderRawTab()}
         </div>
 
