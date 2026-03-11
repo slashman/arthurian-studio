@@ -1,5 +1,5 @@
 import React from 'react'
-import { Plus, Save } from 'lucide-react'
+import { Plus, Save, Trash2 } from 'lucide-react'
 import { Appearance } from '../EntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import { useProject } from '../ProjectContext'
@@ -10,6 +10,7 @@ interface EditAppearancesProps {
   onAddItem: (listType: 'mobs' | 'items') => void;
   onSave: () => void;
   onEditItem: (item: any, index: number, listType: 'mobs' | 'items') => void;
+  onDeleteItem: (index: number, listType: 'mobs' | 'items') => void;
 }
 
 const EditAppearances: React.FC<EditAppearancesProps> = ({ 
@@ -17,7 +18,8 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
   selectedAppearanceIndex,
   onAddItem, 
   onSave, 
-  onEditItem 
+  onEditItem,
+  onDeleteItem
 }) => {
   const { projectData } = useProject();
 
@@ -52,6 +54,7 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
             <th style={{ width: '40px' }}>L</th>
             <th style={{ width: '40px' }}>R</th>
             <th>ID</th>
+            <th style={{ width: '50px' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -86,6 +89,20 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
                   />
               </td>
               <td>{mob.id}</td>
+              <td>
+                <button 
+                  className="delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm(`Are you sure you want to delete mob appearance ${mob.id}?`)) {
+                      onDeleteItem(idx, 'mobs');
+                    }
+                  }}
+                  style={{ background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer' }}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -101,6 +118,7 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
             <th style={{ width: '50px' }}>Icon</th>
             <th>ID</th>
             <th>Frame Index</th>
+            <th style={{ width: '50px' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -115,6 +133,20 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
               </td>
               <td>{item.id}</td>
               <td>{item.i}</td>
+              <td>
+                <button 
+                  className="delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm(`Are you sure you want to delete item appearance ${item.id}?`)) {
+                      onDeleteItem(idx, 'items');
+                    }
+                  }}
+                  style={{ background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer' }}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

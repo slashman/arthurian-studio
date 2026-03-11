@@ -1,5 +1,5 @@
 import React from 'react'
-import { Plus, Save } from 'lucide-react'
+import { Plus, Save, Trash2 } from 'lucide-react'
 import { MobType } from '../EntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import { useProject } from '../ProjectContext'
@@ -9,13 +9,15 @@ interface EditMobTypesProps {
   onAddItem: () => void;
   onSave: () => void;
   onEditItem: (item: MobType, index: number) => void;
+  onDeleteItem: (index: number) => void;
 }
 
 const EditMobTypes: React.FC<EditMobTypesProps> = ({ 
   items, 
   onAddItem, 
   onSave, 
-  onEditItem 
+  onEditItem,
+  onDeleteItem
 }) => {
   const { projectData } = useProject();
 
@@ -51,6 +53,7 @@ const EditMobTypes: React.FC<EditMobTypesProps> = ({
             <th>Name</th>
             <th>HP</th>
             <th>Damage</th>
+            <th style={{ width: '50px' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -73,6 +76,20 @@ const EditMobTypes: React.FC<EditMobTypesProps> = ({
                 <td>{item.name}</td>
                 <td>{item.hp}</td>
                 <td>{item.damage}</td>
+                <td>
+                  <button 
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Are you sure you want to delete ${item.name || item.id}?`)) {
+                        onDeleteItem(index);
+                      }
+                    }}
+                    style={{ background: 'transparent', border: 'none', color: '#ff4444', cursor: 'pointer' }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </td>
               </tr>
             );
           })}

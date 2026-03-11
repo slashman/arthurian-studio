@@ -58,7 +58,7 @@ function App() {
     setEditingSubtype(subtype || null)
   }
 
-  const handleDeleteItem = (index: number) => {
+  const handleDeleteItem = (index: number, subtype?: 'mobs' | 'items') => {
     if (!projectData) return;
     const newData = { ...projectData };
     if (activeTab === 'items') {
@@ -69,6 +69,22 @@ function App() {
       const currentList = [...newData.data.mobTypes];
       currentList.splice(index, 1);
       newData.data.mobTypes = currentList;
+    } else if (activeTab === 'appearances' && selectedAppearanceIndex !== null && subtype) {
+      const currentAppearances = [...newData.data.appearances];
+      const targetAppearance = { ...currentAppearances[selectedAppearanceIndex] };
+      
+      if (subtype === 'mobs') {
+          const list = [...(targetAppearance.mobs || [])];
+          list.splice(index, 1);
+          targetAppearance.mobs = list;
+      } else {
+          const list = [...(targetAppearance.items || [])];
+          list.splice(index, 1);
+          targetAppearance.items = list;
+      }
+      
+      currentAppearances[selectedAppearanceIndex] = targetAppearance;
+      newData.data.appearances = currentAppearances;
     }
     setProjectData(newData);
   }
@@ -148,6 +164,7 @@ function App() {
             onAddItem={() => handleAddItem()}
             onSave={handleSave}
             onEditItem={handleEditItem}
+            onDeleteItem={handleDeleteItem}
           />
       ) : activeTab === 'items' ? (
           <EditItems 
@@ -164,6 +181,7 @@ function App() {
             onAddItem={handleAddItem}
             onSave={handleSave}
             onEditItem={handleEditItem}
+            onDeleteItem={handleDeleteItem}
           />
       )}
 
