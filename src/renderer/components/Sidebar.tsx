@@ -48,8 +48,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexGrow: 1 }}>
+            <Palette size={16} />
+            <span style={{ flexGrow: 1 }}>Appearances</span>
             {appearancesExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            <Palette size={16} /> Appearances
         </div>
       </div>
 
