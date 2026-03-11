@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { Users, Palette, ChevronDown, ChevronRight, FileJson } from 'lucide-react'
+import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword } from 'lucide-react'
 import { Appearance } from '../EntityTypes'
 
 interface SidebarProps {
-  activeTab: 'mobTypes' | 'appearances';
+  activeTab: 'mobTypes' | 'appearances' | 'items';
   appearances: Appearance[];
   selectedAppearanceIndex: number | null;
-  onSelectTab: (tab: 'mobTypes' | 'appearances') => void;
+  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items') => void;
   onSelectAppearance: (index: number) => void;
 }
 
@@ -29,6 +29,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         onClick={() => onSelectTab('mobTypes')}
       >
         <Users size={16} /> Mob Types
+      </div>
+
+      {/* Items Header */}
+      <div 
+        className={`sidebar-item ${activeTab === 'items' ? 'active' : ''}`}
+        onClick={() => onSelectTab('items')}
+      >
+        <Sword size={16} /> Items
       </div>
 
       {/* Appearances Header */}

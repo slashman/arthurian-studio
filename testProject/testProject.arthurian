@@ -1,8 +1,9 @@
 {
     "studioVersion": "0.1.0",
     "arthurianVersion": "0.11.0",
-    "appearancesFile: "data/appearances.json",
+    "appearancesFile": "data/appearances.json",
     "mobTypesFile": "data/mobTypes.json",
+    "itemsFile": "data/items.json",
     "tileWidth": 16,
     "tileHeight": 16,
     "tilesets": [

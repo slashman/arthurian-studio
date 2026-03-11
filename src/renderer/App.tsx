@@ -2,7 +2,9 @@ import React, { useState } from 'react'
 import Sidebar from './components/Sidebar'
 import EditMobTypes from './components/EditMobTypes'
 import EditAppearances from './components/EditAppearances'
+import EditItems from './components/EditItems'
 import EditMobTypeModal from './components/EditMobTypeModal'
+import EditItemModal from './components/EditItemModal'
 import EditMobAppearanceModal from './components/EditMobAppearanceModal'
 import EditItemAppearanceModal from './components/EditItemAppearanceModal'
 import ProjectLoader from './components/ProjectLoader'
@@ -11,7 +13,7 @@ import { ProjectData } from './EntityTypes'
 
 function App() {
   const { projectData, setProjectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances'>('mobTypes')
+  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items'>('mobTypes')
   const [selectedAppearanceIndex, setSelectedAppearanceIndex] = useState<number | null>(null)
   
   const [editingItem, setEditingItem] = useState<any | null>(null)
@@ -32,7 +34,11 @@ function App() {
     const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
     const projectDir = filePath.substring(0, lastSlash);
     
-    const targetFileRelative = activeTab === 'mobTypes' ? project.mobTypesFile : project.appearancesFile;
+    let targetFileRelative = '';
+    if (activeTab === 'mobTypes') targetFileRelative = project.mobTypesFile;
+    else if (activeTab === 'appearances') targetFileRelative = project.appearancesFile;
+    else if (activeTab === 'items') targetFileRelative = project.itemsFile;
+
     const fullPath = projectDir + (projectDir.includes('/') ? '/' : '\\') + targetFileRelative;
     
     const dataToSave = projectData.data[activeTab];
@@ -52,6 +58,21 @@ function App() {
     setEditingSubtype(subtype || null)
   }
 
+  const handleDeleteItem = (index: number) => {
+    if (!projectData) return;
+    const newData = { ...projectData };
+    if (activeTab === 'items') {
+      const currentList = [...newData.data.items];
+      currentList.splice(index, 1);
+      newData.data.items = currentList;
+    } else if (activeTab === 'mobTypes') {
+      const currentList = [...newData.data.mobTypes];
+      currentList.splice(index, 1);
+      newData.data.mobTypes = currentList;
+    }
+    setProjectData(newData);
+  }
+
   const saveEdit = () => {
     if (!projectData) return;
     const newData = { ...projectData }
@@ -64,6 +85,14 @@ function App() {
             currentList.push(editingItem)
         }
         newData.data.mobTypes = currentList;
+    } else if (activeTab === 'items') {
+        const currentList = [...newData.data.items];
+        if (editIndex >= 0) {
+            currentList[editIndex] = editingItem
+        } else {
+            currentList.push(editingItem)
+        }
+        newData.data.items = currentList;
     } else if (activeTab === 'appearances' && selectedAppearanceIndex !== null && editingSubtype) {
         const currentAppearances = [...newData.data.appearances];
         const targetAppearance = { ...currentAppearances[selectedAppearanceIndex] };
@@ -89,9 +118,9 @@ function App() {
     setEditingSubtype(null)
   }
 
-  const handleSelectTab = (tab: 'mobTypes' | 'appearances') => {
+  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items') => {
       setActiveTab(tab);
-      if (tab === 'mobTypes') setSelectedAppearanceIndex(null);
+      if (tab !== 'appearances') setSelectedAppearanceIndex(null);
   }
 
   const handleSelectAppearance = (index: number) => {
@@ -120,6 +149,14 @@ function App() {
             onSave={handleSave}
             onEditItem={handleEditItem}
           />
+      ) : activeTab === 'items' ? (
+          <EditItems 
+            items={projectData.data.items}
+            onAddItem={() => handleAddItem()}
+            onSave={handleSave}
+            onEditItem={handleEditItem}
+            onDeleteItem={handleDeleteItem}
+          />
       ) : (
           <EditAppearances 
             items={projectData.data.appearances}
@@ -132,6 +169,16 @@ function App() {
 
       {editingItem && activeTab === 'mobTypes' && (
         <EditMobTypeModal 
+          editingItem={editingItem}
+          editIndex={editIndex}
+          onCancel={() => setEditingItem(null)}
+          onConfirm={saveEdit}
+          onUpdateItem={setEditingItem}
+        />
+      )}
+
+      {editingItem && activeTab === 'items' && (
+        <EditItemModal 
           editingItem={editingItem}
           editIndex={editIndex}
           onCancel={() => setEditingItem(null)}
