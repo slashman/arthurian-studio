@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import { Item, ItemEffect } from '../EntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
+import AppearancePickerModal from './AppearancePickerModal'
 import { useProject } from '../ProjectContext'
+import { Search } from 'lucide-react'
 
 interface EditItemModalProps {
   editingItem: Item;
@@ -20,6 +22,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
 }) => {
   const { projectData } = useProject();
   const [activeTab, setActiveTab] = useState<'general' | 'combat' | 'interaction' | 'effect' | 'raw'>('general');
+  const [pickerTarget, setPickerTarget] = useState<'appearance' | 'flyAppearance' | null>(null);
 
   if (!projectData) return null;
 
@@ -45,6 +48,13 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
     onUpdateItem({ ...editingItem, effect: newEffect });
   };
 
+  const handleSelectFromPicker = (id: string) => {
+    if (pickerTarget) {
+      onUpdateItem({ ...editingItem, [pickerTarget]: id });
+      setPickerTarget(null);
+    }
+  };
+
   const renderGeneralTab = () => (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
         <div className="form-group">
@@ -57,7 +67,10 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
         </div>
         <div className="form-group">
             <label>Appearance ID</label>
-            <input value={editingItem.appearance || ''} onChange={(e) => onUpdateItem({...editingItem, appearance: e.target.value})} />
+            <div style={{ display: 'flex', gap: '5px' }}>
+                <input style={{ flexGrow: 1 }} value={editingItem.appearance || ''} onChange={(e) => onUpdateItem({...editingItem, appearance: e.target.value})} />
+                <button onClick={() => setPickerTarget('appearance')} style={{ padding: '4px 8px' }} title="Browse appearances"><Search size={14} /></button>
+            </div>
         </div>
         <div className="form-group">
             <label>Type</label>
@@ -99,7 +112,10 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
         </div>
         <div className="form-group">
             <label>Fly Appearance ID</label>
-            <input value={editingItem.flyAppearance || ''} onChange={(e) => onUpdateItem({...editingItem, flyAppearance: e.target.value})} />
+            <div style={{ display: 'flex', gap: '5px' }}>
+                <input style={{ flexGrow: 1 }} value={editingItem.flyAppearance || ''} onChange={(e) => onUpdateItem({...editingItem, flyAppearance: e.target.value})} />
+                <button onClick={() => setPickerTarget('flyAppearance')} style={{ padding: '4px 8px' }} title="Browse appearances"><Search size={14} /></button>
+            </div>
         </div>
         <div className="form-group">
             <label>Fly Type (straight, rotate)</label>
@@ -289,6 +305,12 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
           <button onClick={onConfirm}>Confirm</button>
         </div>
       </div>
+      {pickerTarget && (
+        <AppearancePickerModal 
+          onSelect={handleSelectFromPicker} 
+          onCancel={() => setPickerTarget(null)} 
+        />
+      )}
     </div>
   )
 }

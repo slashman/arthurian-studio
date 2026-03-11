@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { MobType, MobItem } from '../EntityTypes'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Search } from 'lucide-react'
 import AppearanceCanvas from './AppearanceCanvas'
+import AppearancePickerModal from './AppearancePickerModal'
 import { useProject } from '../ProjectContext'
 
 interface EditMobTypeModalProps {
@@ -20,6 +21,7 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
   onUpdateItem 
 }) => {
   const { projectData } = useProject();
+  const [pickerTarget, setPickerTarget] = useState<'appearance' | 'corpse' | 'portrait' | null>(null);
 
   if (!projectData) return null;
 
@@ -63,8 +65,14 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
   };
 
   const appearancePreview = resolveAppearance(editingItem.appearance);
-  const corpsePreview = resolveAppearance(editingItem.corpse);
   const portraitPreview = resolveAppearance(editingItem.portrait);
+
+  const handleSelectFromPicker = (id: string) => {
+    if (pickerTarget) {
+      onUpdateItem({ ...editingItem, [pickerTarget]: id });
+      setPickerTarget(null);
+    }
+  };
 
   return (
     <div className="modal-overlay">
@@ -78,14 +86,6 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
                 <AppearanceCanvas 
                     tilesetId={appearancePreview?.tilesetId || ''}
                     frameIndex={appearancePreview?.frameIndex || 0}
-                    size={64}
-                />
-            </div>
-            <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '5px' }}>Corpse</div>
-                <AppearanceCanvas 
-                    tilesetId={corpsePreview?.tilesetId || ''}
-                    frameIndex={corpsePreview?.frameIndex || 0}
                     size={64}
                 />
             </div>
@@ -118,10 +118,14 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
 
             <div className="form-group">
                 <label>Appearance ID</label>
-                <input 
-                value={editingItem.appearance || ''} 
-                onChange={(e) => onUpdateItem({...editingItem, appearance: e.target.value})}
-                />
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    <input 
+                    style={{ flexGrow: 1 }}
+                    value={editingItem.appearance || ''} 
+                    onChange={(e) => onUpdateItem({...editingItem, appearance: e.target.value})}
+                    />
+                    <button onClick={() => setPickerTarget('appearance')} style={{ padding: '4px 8px' }} title="Browse appearances"><Search size={14} /></button>
+                </div>
             </div>
 
             <div className="form-group">
@@ -182,10 +186,14 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
 
             <div className="form-group">
                 <label>Portrait ID</label>
-                <input 
-                  value={editingItem.portrait || ''} 
-                  onChange={(e) => onUpdateItem({...editingItem, portrait: e.target.value})}
-                />
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    <input 
+                    style={{ flexGrow: 1 }}
+                    value={editingItem.portrait || ''} 
+                    onChange={(e) => onUpdateItem({...editingItem, portrait: e.target.value})}
+                    />
+                    <button onClick={() => setPickerTarget('portrait')} style={{ padding: '4px 8px' }} title="Browse appearances"><Search size={14} /></button>
+                </div>
             </div>
 
             <div className="form-group">
@@ -248,6 +256,12 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
           <button onClick={onConfirm}>Confirm</button>
         </div>
       </div>
+      {pickerTarget && (
+        <AppearancePickerModal 
+          onSelect={handleSelectFromPicker} 
+          onCancel={() => setPickerTarget(null)} 
+        />
+      )}
     </div>
   )
 }
