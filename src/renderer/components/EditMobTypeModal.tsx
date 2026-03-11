@@ -198,18 +198,29 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
 
             <div className="form-group">
                 <label>Alignment</label>
-                <input 
+                <select 
+                  style={{ width: '100%', backgroundColor: '#3c3c3c', color: 'white', border: '1px solid #555', padding: '6px' }}
                   value={editingItem.alignment || ''} 
                   onChange={(e) => onUpdateItem({...editingItem, alignment: e.target.value})}
-                />
+                >
+                    <option value="">None</option>
+                    <option value="enemy">Enemy</option>
+                    <option value="player">Player</option>
+                </select>
             </div>
 
             <div className="form-group">
                 <label>Intent</label>
-                <input 
+                <select 
+                  style={{ width: '100%', backgroundColor: '#3c3c3c', color: 'white', border: '1px solid #555', padding: '6px' }}
                   value={editingItem.intent || ''} 
                   onChange={(e) => onUpdateItem({...editingItem, intent: e.target.value})}
-                />
+                >
+                    <option value="">None</option>
+                    <option value="waitCommand">Wait Command</option>
+                    <option value="seekPlayer">Seek Player</option>
+                    <option value="followSchedule">Follow Schedule</option>
+                </select>
             </div>
         </div>
 

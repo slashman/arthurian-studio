@@ -38,8 +38,8 @@ export interface MobType {
   portrait?: string;
   useEffect?: UseEffect;
   description?: string;
-  intent?: string;
-  alignment?: string;
+  intent?: 'waitCommand' | 'seekPlayer' | 'followSchedule' | string;
+  alignment?: 'enemy' | 'player' | string;
   items?: MobItem[];
 }
 
