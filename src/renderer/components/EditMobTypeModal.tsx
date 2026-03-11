@@ -3,6 +3,7 @@ import { MobType, MobItem } from '../EntityTypes'
 import { Plus, Trash2, Search } from 'lucide-react'
 import AppearanceCanvas from './AppearanceCanvas'
 import AppearancePickerModal from './AppearancePickerModal'
+import ItemPickerModal from './ItemPickerModal'
 import { useProject } from '../ProjectContext'
 
 interface EditMobTypeModalProps {
@@ -21,7 +22,9 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
   onUpdateItem 
 }) => {
   const { projectData } = useProject();
-  const [pickerTarget, setPickerTarget] = useState<'appearance' | 'corpse' | 'portrait' | null>(null);
+  const [pickerTarget, setPickerTarget] = useState<'appearance' | 'portrait' | null>(null);
+  const [itemPickerTarget, setItemPickerTarget] = useState<'corpse' | 'weapon' | 'list' | null>(null);
+  const [itemPickerIndex, setItemPickerIndex] = useState<number>(-1);
 
   if (!projectData) return null;
 
@@ -72,6 +75,16 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
       onUpdateItem({ ...editingItem, [pickerTarget]: id });
       setPickerTarget(null);
     }
+  };
+
+  const handleSelectItemFromPicker = (id: string) => {
+    if (itemPickerTarget === 'list' && itemPickerIndex >= 0) {
+        handleItemChange(itemPickerIndex, 'itemId', id);
+    } else if (itemPickerTarget === 'corpse' || itemPickerTarget === 'weapon') {
+        onUpdateItem({ ...editingItem, [itemPickerTarget]: id });
+    }
+    setItemPickerTarget(null);
+    setItemPickerIndex(-1);
   };
 
   return (
@@ -130,10 +143,14 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
 
             <div className="form-group">
                 <label>Corpse ID</label>
-                <input 
-                value={editingItem.corpse || ''} 
-                onChange={(e) => onUpdateItem({...editingItem, corpse: e.target.value})}
-                />
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    <input 
+                    style={{ flexGrow: 1 }}
+                    value={editingItem.corpse || ''} 
+                    onChange={(e) => onUpdateItem({...editingItem, corpse: e.target.value})}
+                    />
+                    <button onClick={() => setItemPickerTarget('corpse')} style={{ padding: '4px 8px' }} title="Browse items"><Search size={14} /></button>
+                </div>
             </div>
         </div>
 
@@ -178,10 +195,14 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
             <div className="form-group">
                 <label>Weapon</label>
-                <input 
-                  value={editingItem.weapon || ''} 
-                  onChange={(e) => onUpdateItem({...editingItem, weapon: e.target.value})}
-                />
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    <input 
+                    style={{ flexGrow: 1 }}
+                    value={editingItem.weapon || ''} 
+                    onChange={(e) => onUpdateItem({...editingItem, weapon: e.target.value})}
+                    />
+                    <button onClick={() => setItemPickerTarget('weapon')} style={{ padding: '4px 8px' }} title="Browse items"><Search size={14} /></button>
+                </div>
             </div>
 
             <div className="form-group">
@@ -241,12 +262,15 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
             <div style={{ marginTop: '10px', background: '#2d2d2d', padding: '10px' }}>
                 {(editingItem.items || []).map((item, idx) => (
                     <div key={idx} style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
-                        <input 
-                            placeholder="Item ID"
-                            style={{ flex: 2 }}
-                            value={item.itemId} 
-                            onChange={(e) => handleItemChange(idx, 'itemId', e.target.value)}
-                        />
+                        <div style={{ display: 'flex', gap: '5px', flex: 2 }}>
+                            <input 
+                                placeholder="Item ID"
+                                style={{ flexGrow: 1 }}
+                                value={item.itemId} 
+                                onChange={(e) => handleItemChange(idx, 'itemId', e.target.value)}
+                            />
+                            <button onClick={() => { setItemPickerTarget('list'); setItemPickerIndex(idx); }} style={{ padding: '4px 8px' }} title="Browse items"><Search size={14} /></button>
+                        </div>
                         <input 
                             type="number"
                             placeholder="Qty"
@@ -272,6 +296,12 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
           onSelect={handleSelectFromPicker} 
           onCancel={() => setPickerTarget(null)} 
         />
+      )}
+      {itemPickerTarget && (
+          <ItemPickerModal 
+            onSelect={handleSelectItemFromPicker}
+            onCancel={() => { setItemPickerTarget(null); setItemPickerIndex(-1); }}
+          />
       )}
     </div>
   )

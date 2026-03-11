@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Item, ItemEffect } from '../EntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import AppearancePickerModal from './AppearancePickerModal'
+import ItemPickerModal from './ItemPickerModal'
 import { useProject } from '../ProjectContext'
 import { Search } from 'lucide-react'
 
@@ -23,6 +24,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
   const { projectData } = useProject();
   const [activeTab, setActiveTab] = useState<'general' | 'combat' | 'interaction' | 'effect' | 'raw'>('general');
   const [pickerTarget, setPickerTarget] = useState<'appearance' | 'flyAppearance' | null>(null);
+  const [itemPickerTarget, setItemPickerTarget] = useState<'usesProjectileType' | 'transformTo' | null>(null);
 
   if (!projectData) return null;
 
@@ -53,6 +55,15 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
       onUpdateItem({ ...editingItem, [pickerTarget]: id });
       setPickerTarget(null);
     }
+  };
+
+  const handleSelectItemFromPicker = (id: string) => {
+    if (itemPickerTarget === 'transformTo') {
+        handleEffectChange('transformTo', id);
+    } else if (itemPickerTarget === 'usesProjectileType') {
+        onUpdateItem({ ...editingItem, usesProjectileType: id });
+    }
+    setItemPickerTarget(null);
   };
 
   const renderGeneralTab = () => (
@@ -139,7 +150,10 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
         </div>
         <div className="form-group">
             <label>Projectile Type</label>
-            <input value={editingItem.usesProjectileType || ''} onChange={(e) => onUpdateItem({...editingItem, usesProjectileType: e.target.value})} />
+            <div style={{ display: 'flex', gap: '5px' }}>
+                <input style={{ flexGrow: 1 }} value={editingItem.usesProjectileType || ''} onChange={(e) => onUpdateItem({...editingItem, usesProjectileType: e.target.value})} />
+                <button onClick={() => setItemPickerTarget('usesProjectileType')} style={{ padding: '4px 8px' }} title="Browse items"><Search size={14} /></button>
+            </div>
         </div>
         <div className="form-group">
             <label>Stack Limit</label>
@@ -237,7 +251,10 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
         </div>
         <div className="form-group">
             <label>Transform To (Item ID)</label>
-            <input value={editingItem.effect?.transformTo || ''} onChange={(e) => handleEffectChange('transformTo', e.target.value)} />
+            <div style={{ display: 'flex', gap: '5px' }}>
+                <input style={{ flexGrow: 1 }} value={editingItem.effect?.transformTo || ''} onChange={(e) => handleEffectChange('transformTo', e.target.value)} />
+                <button onClick={() => setItemPickerTarget('transformTo')} style={{ padding: '4px 8px' }} title="Browse items"><Search size={14} /></button>
+            </div>
         </div>
         <div className="form-group">
             <label>Audio Asset Key</label>
@@ -353,6 +370,12 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
           onSelect={handleSelectFromPicker} 
           onCancel={() => setPickerTarget(null)} 
         />
+      )}
+      {itemPickerTarget && (
+          <ItemPickerModal 
+            onSelect={handleSelectItemFromPicker}
+            onCancel={() => setItemPickerTarget(null)}
+          />
       )}
     </div>
   )
