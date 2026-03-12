@@ -5,8 +5,9 @@ import AppearanceCanvas from './AppearanceCanvas'
 import ItemPickerModal from './ItemPickerModal'
 import MobTypePickerModal from './MobTypePickerModal'
 import EditNPCDialogs from './EditNPCDialogs'
+import EditNPCSchedule from './EditNPCSchedule'
 import { useProject } from '../ProjectContext'
-import { Search, Plus, Trash2, MessageSquare } from 'lucide-react'
+import { Search, Plus, Trash2, MessageSquare, Calendar } from 'lucide-react'
 
 interface EditNPCModalProps {
   editingItem: NPC;
@@ -24,7 +25,7 @@ const EditNPCModal: React.FC<EditNPCModalProps> = ({
   onUpdateItem 
 }) => {
   const { projectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'general' | 'inventory' | 'dialogs' | 'raw'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'inventory' | 'dialogs' | 'schedule' | 'raw'>('general');
   const [mobTypePickerOpen, setMobTypePickerOpen] = useState(false);
   const [itemPickerTarget, setItemPickerTarget] = useState<'weapon' | 'armor' | 'backpack' | 'list' | null>(null);
   const [itemPickerIndex, setItemPickerIndex] = useState<number>(-1);
@@ -226,6 +227,7 @@ const EditNPCModal: React.FC<EditNPCModalProps> = ({
             <button className={`tab-btn ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')} style={{ padding: '8px 15px', background: activeTab === 'general' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>General</button>
             <button className={`tab-btn ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => setActiveTab('inventory')} style={{ padding: '8px 15px', background: activeTab === 'inventory' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>Inventory</button>
             <button className={`tab-btn ${activeTab === 'dialogs' ? 'active' : ''}`} onClick={() => setActiveTab('dialogs')} style={{ padding: '8px 15px', background: activeTab === 'dialogs' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><MessageSquare size={14}/> Dialogs</div></button>
+            <button className={`tab-btn ${activeTab === 'schedule' ? 'active' : ''}`} onClick={() => setActiveTab('schedule')} style={{ padding: '8px 15px', background: activeTab === 'schedule' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><Calendar size={14}/> Schedule</div></button>
             <button className={`tab-btn ${activeTab === 'raw' ? 'active' : ''}`} onClick={() => setActiveTab('raw')} style={{ padding: '8px 15px', background: activeTab === 'raw' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>JSON</button>
         </div>
 
@@ -236,6 +238,12 @@ const EditNPCModal: React.FC<EditNPCModalProps> = ({
                 <EditNPCDialogs 
                     dialog={editingItem.dialog || []} 
                     onUpdateDialog={(newDialog) => onUpdateItem({ ...editingItem, dialog: newDialog })} 
+                />
+            )}
+            {activeTab === 'schedule' && (
+                <EditNPCSchedule 
+                    schedule={editingItem.schedule || []} 
+                    onUpdateSchedule={(newSchedule) => onUpdateItem({ ...editingItem, schedule: newSchedule })} 
                 />
             )}
             {activeTab === 'raw' && renderRawTab()}

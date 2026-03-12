@@ -34,6 +34,20 @@ export interface DialogFragment {
   synonym?: string;
 }
 
+export interface ScheduleAction {
+  type: string;
+  hours?: number;
+  once?: boolean;
+  [key: string]: any;
+}
+
+export interface ScheduleItem {
+  id: string;
+  time: number;
+  location: { x: number, y: number };
+  action?: ScheduleAction;
+}
+
 export interface NPC {
   id: string;
   name: string;
@@ -46,6 +60,6 @@ export interface NPC {
   items?: MobItem[];
   intent?: 'waitCommand' | 'seekPlayer' | 'followSchedule' | string;
   dialog?: DialogFragment[];
-  schedule?: any[];
+  schedule?: ScheduleItem[];
   triggers?: any[];
 }
