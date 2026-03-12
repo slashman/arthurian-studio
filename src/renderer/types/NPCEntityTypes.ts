@@ -48,6 +48,18 @@ export interface ScheduleItem {
   action?: ScheduleAction;
 }
 
+export interface TriggerAction {
+  type: 'talk' | 'console' | 'cutscene' | 'vanishNearbyMobs' | 'endCombat' | string;
+  value?: string;
+}
+
+export interface TriggerItem {
+  id: string;
+  type: string;
+  value: number;
+  actions: TriggerAction[];
+}
+
 export interface NPC {
   id: string;
   name: string;
@@ -61,5 +73,5 @@ export interface NPC {
   intent?: 'waitCommand' | 'seekPlayer' | 'followSchedule' | string;
   dialog?: DialogFragment[];
   schedule?: ScheduleItem[];
-  triggers?: any[];
+  triggers?: TriggerItem[];
 }
