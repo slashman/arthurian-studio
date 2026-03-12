@@ -3,10 +3,10 @@ import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword } from 'luci
 import { Appearance } from '../EntityTypes'
 
 interface SidebarProps {
-  activeTab: 'mobTypes' | 'appearances' | 'items';
+  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs';
   appearances: Appearance[];
   selectedAppearanceIndex: number | null;
-  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items') => void;
+  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs') => void;
   onSelectAppearance: (index: number) => void;
 }
 
@@ -29,6 +29,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         onClick={() => onSelectTab('mobTypes')}
       >
         <Users size={16} /> Mob Types
+      </div>
+
+      {/* NPCs Header */}
+      <div 
+        className={`sidebar-item ${activeTab === 'npcs' ? 'active' : ''}`}
+        onClick={() => onSelectTab('npcs')}
+      >
+        <Users size={16} /> NPCs
       </div>
 
       {/* Items Header */}

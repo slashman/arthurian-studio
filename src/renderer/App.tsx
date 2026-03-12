@@ -3,8 +3,10 @@ import Sidebar from './components/Sidebar'
 import EditMobTypes from './components/EditMobTypes'
 import EditAppearances from './components/EditAppearances'
 import EditItems from './components/EditItems'
+import EditNPCs from './components/EditNPCs'
 import EditMobTypeModal from './components/EditMobTypeModal'
 import EditItemModal from './components/EditItemModal'
+import EditNPCModal from './components/EditNPCModal'
 import EditMobAppearanceModal from './components/EditMobAppearanceModal'
 import EditItemAppearanceModal from './components/EditItemAppearanceModal'
 import ProjectLoader from './components/ProjectLoader'
@@ -13,7 +15,7 @@ import { ProjectData } from './EntityTypes'
 
 function App() {
   const { projectData, setProjectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items'>('mobTypes')
+  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs'>('mobTypes')
   const [selectedAppearanceIndex, setSelectedAppearanceIndex] = useState<number | null>(null)
   
   const [editingItem, setEditingItem] = useState<any | null>(null)
@@ -38,6 +40,7 @@ function App() {
     if (activeTab === 'mobTypes') targetFileRelative = project.mobTypesFile;
     else if (activeTab === 'appearances') targetFileRelative = project.appearancesFile;
     else if (activeTab === 'items') targetFileRelative = project.itemsFile;
+    else if (activeTab === 'npcs') targetFileRelative = project.npcsFile;
 
     const fullPath = projectDir + (projectDir.includes('/') ? '/' : '\\') + targetFileRelative;
     
@@ -69,6 +72,10 @@ function App() {
       const currentList = [...newData.data.mobTypes];
       currentList.splice(index, 1);
       newData.data.mobTypes = currentList;
+    } else if (activeTab === 'npcs') {
+      const currentList = [...newData.data.npcs];
+      currentList.splice(index, 1);
+      newData.data.npcs = currentList;
     } else if (activeTab === 'appearances' && selectedAppearanceIndex !== null && subtype) {
       const currentAppearances = [...newData.data.appearances];
       const targetAppearance = { ...currentAppearances[selectedAppearanceIndex] };
@@ -109,6 +116,14 @@ function App() {
             currentList.push(editingItem)
         }
         newData.data.items = currentList;
+    } else if (activeTab === 'npcs') {
+        const currentList = [...newData.data.npcs];
+        if (editIndex >= 0) {
+            currentList[editIndex] = editingItem
+        } else {
+            currentList.push(editingItem)
+        }
+        newData.data.npcs = currentList;
     } else if (activeTab === 'appearances' && selectedAppearanceIndex !== null && editingSubtype) {
         const currentAppearances = [...newData.data.appearances];
         const targetAppearance = { ...currentAppearances[selectedAppearanceIndex] };
@@ -134,7 +149,7 @@ function App() {
     setEditingSubtype(null)
   }
 
-  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items') => {
+  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs') => {
       setActiveTab(tab);
       if (tab !== 'appearances') setSelectedAppearanceIndex(null);
   }
@@ -174,6 +189,14 @@ function App() {
             onEditItem={handleEditItem}
             onDeleteItem={handleDeleteItem}
           />
+      ) : activeTab === 'npcs' ? (
+          <EditNPCs 
+            items={projectData.data.npcs}
+            onAddItem={() => handleAddItem()}
+            onSave={handleSave}
+            onEditItem={handleEditItem}
+            onDeleteItem={handleDeleteItem}
+          />
       ) : (
           <EditAppearances 
             items={projectData.data.appearances}
@@ -197,6 +220,16 @@ function App() {
 
       {editingItem && activeTab === 'items' && (
         <EditItemModal 
+          editingItem={editingItem}
+          editIndex={editIndex}
+          onCancel={() => setEditingItem(null)}
+          onConfirm={saveEdit}
+          onUpdateItem={setEditingItem}
+        />
+      )}
+
+      {editingItem && activeTab === 'npcs' && (
+        <EditNPCModal 
           editingItem={editingItem}
           editIndex={editIndex}
           onCancel={() => setEditingItem(null)}

@@ -4,6 +4,7 @@
     "appearancesFile": "data/appearances.json",
     "mobTypesFile": "data/mobTypes.json",
     "itemsFile": "data/items.json",
+    "npcsFile": "data/npcs.json",
     "tileWidth": 16,
     "tileHeight": 16,
     "tilesets": [

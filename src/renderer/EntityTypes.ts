@@ -4,6 +4,7 @@ export interface ArthurianProject {
   appearancesFile: string;
   mobTypesFile: string;
   itemsFile: string;
+  npcsFile: string;
   tileWidth: number;
   tileHeight: number;
   tilesets: TilesetDefinition[];
@@ -88,6 +89,22 @@ export interface Item {
   containerType?: 'medium' | 'backpack' | string;
 }
 
+export interface NPC {
+  id: string;
+  name: string;
+  type: string;
+  alignment?: 'enemy' | 'player' | string;
+  description?: string;
+  weapon?: string;
+  armor?: string;
+  backpack?: string;
+  items?: MobItem[];
+  intent?: 'waitCommand' | 'seekPlayer' | 'followSchedule' | string;
+  dialog?: any[];
+  schedule?: any[];
+  triggers?: any[];
+}
+
 export interface MobAppearance {
   id: string;
   u: number[];
@@ -114,5 +131,6 @@ export interface ProjectData {
     mobTypes: MobType[];
     appearances: Tileset[];
     items: Item[];
+    npcs: NPC[];
   };
 }

@@ -95,10 +95,12 @@ ipcMain.handle('open-project', async () => {
   const mobTypesPath = path.resolve(projectDir, project.mobTypesFile)
   const appearancesPath = path.resolve(projectDir, project.appearancesFile)
   const itemsPath = path.resolve(projectDir, project.itemsFile || 'data/items.json')
+  const npcsPath = path.resolve(projectDir, project.npcsFile || 'data/npcs.json')
 
   const mobTypes = JSON.parse(fs.readFileSync(mobTypesPath, 'utf8'))
   const appearances = JSON.parse(fs.readFileSync(appearancesPath, 'utf8'))
   const items = JSON.parse(fs.readFileSync(itemsPath, 'utf8'))
+  const npcs = JSON.parse(fs.readFileSync(npcsPath, 'utf8'))
 
   return {
     filePath,
@@ -106,7 +108,8 @@ ipcMain.handle('open-project', async () => {
     data: {
       mobTypes,
       appearances,
-      items
+      items,
+      npcs
     }
   }
 })
