@@ -23,7 +23,7 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
 }) => {
   const { projectData } = useProject();
   const [activeTab, setActiveTab] = useState<'general' | 'combat' | 'special' | 'effect' | 'raw'>('general');
-  const [pickerTarget, setPickerTarget] = useState<'appearance' | 'flyAppearance' | null>(null);
+  const [pickerTarget, setPickerTarget] = useState<'appearance' | 'flyAppearance' | 'closedAppearance' | 'openAppearance' | null>(null);
   const [itemPickerTarget, setItemPickerTarget] = useState<'usesProjectileType' | 'transformTo' | null>(null);
 
   if (!projectData) return null;
@@ -42,7 +42,8 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
     return null;
   };
 
-  const appearancePreview = resolveAppearance(editingItem.appearance);
+  const appearancePreviewId = (editingItem.type === 'linkedDoor' && editingItem.closedAppearance) ? editingItem.closedAppearance : editingItem.appearance;
+  const appearancePreview = resolveAppearance(appearancePreviewId);
   const flyAppearancePreview = resolveAppearance(editingItem.flyAppearance);
 
   const handleEffectChange = (field: keyof ItemEffect, value: any) => {
@@ -236,6 +237,20 @@ const EditItemModal: React.FC<EditItemModalProps> = ({
                 <div className="form-group">
                     <label>Linked Y</label>
                     <input type="number" value={editingItem.linked?.y || 0} onChange={(e) => onUpdateItem({...editingItem, linked: { x: editingItem.linked?.x || 0, y: parseInt(e.target.value) || 0 }})} />
+                </div>
+                <div className="form-group">
+                    <label>Closed Appearance</label>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                        <input style={{ flexGrow: 1 }} value={editingItem.closedAppearance || ''} onChange={(e) => onUpdateItem({...editingItem, closedAppearance: e.target.value})} />
+                        <button onClick={() => setPickerTarget('closedAppearance')} style={{ padding: '4px 8px' }} title="Browse appearances"><Search size={14} /></button>
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label>Open Appearance</label>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                        <input style={{ flexGrow: 1 }} value={editingItem.openAppearance || ''} onChange={(e) => onUpdateItem({...editingItem, openAppearance: e.target.value})} />
+                        <button onClick={() => setPickerTarget('openAppearance')} style={{ padding: '4px 8px' }} title="Browse appearances"><Search size={14} /></button>
+                    </div>
                 </div>
             </>
         )}

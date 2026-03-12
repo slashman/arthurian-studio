@@ -58,7 +58,8 @@ const EditItems: React.FC<EditItemsProps> = ({
         </thead>
         <tbody>
           {items.map((item, index) => {
-            const appearance = getItemAppearance(item.appearance);
+            const appearanceId = (item.type === 'linkedDoor' && item.closedAppearance) ? item.closedAppearance : item.appearance;
+            const appearance = appearanceId ? getItemAppearance(appearanceId) : null;
             return (
               <tr key={index} onClick={() => onEditItem(item, index)}>
                 <td style={{ padding: '4px' }}>
