@@ -10,12 +10,16 @@ export interface DialogObject {
   type: string;
   text?: string;
   flagName?: string;
-  name?: string; // for interruption
+  name?: string; // for dialogInterruption
   value?: any;
 }
 
 export type DialogLine = string | DialogObject;
 
+/**
+ * DialogLines can be a single string, a single object, or an array of either.
+ * We'll mostly normalize to array in the editor but support both in data.
+ */
 export type DialogLines = DialogLine | DialogLine[];
 
 export interface DialogVariant {
