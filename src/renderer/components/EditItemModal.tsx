@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Item, ItemEffect } from '../EntityTypes'
+import { Item, ItemEffect } from '../types/ItemEntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import AppearancePickerModal from './AppearancePickerModal'
 import ItemPickerModal from './ItemPickerModal'

@@ -6,7 +6,7 @@
     - You MUST NOT use `git add` unless the user explicitly tells you to stage files.
 - **Project Structure:** Follow the Electron + React (Vite) structure with `src/main`, `src/preload`, and `src/renderer`.
 - **Styling:** Adhere to the VS Code-inspired dark theme and custom CSS.
-- **Type Safety:** Maintain strict TypeScript interfaces in `EntityTypes.ts` for all project data.
+- **Type Safety:** Maintain strict TypeScript interfaces in the `src/renderer/types/` directory for all project data.
 - **UI Design:**
     - Any text field related to an `appearance id` must include a "browse" button that opens an `AppearancePickerModal`.
     - Any text field related to an `item id` must include a "browse" button that opens an `ItemPickerModal`.

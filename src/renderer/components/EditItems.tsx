@@ -1,6 +1,6 @@
 import React from 'react'
 import { Plus, Save, Trash2 } from 'lucide-react'
-import { Item } from '../EntityTypes'
+import { Item } from '../types/ItemEntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import { useProject } from '../ProjectContext'
 

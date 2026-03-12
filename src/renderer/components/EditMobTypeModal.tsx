@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { MobType, MobItem } from '../EntityTypes'
+import { MobType, MobItem } from '../types/MobEntityTypes'
 import { Plus, Trash2, Search } from 'lucide-react'
 import AppearanceCanvas from './AppearanceCanvas'
 import AppearancePickerModal from './AppearancePickerModal'

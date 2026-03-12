@@ -1,6 +1,6 @@
 import React from 'react'
 import { Plus, Save, Trash2 } from 'lucide-react'
-import { MobType } from '../EntityTypes'
+import { MobType } from '../types/MobEntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import { useProject } from '../ProjectContext'
 

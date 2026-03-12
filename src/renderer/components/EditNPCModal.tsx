@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import { NPC, MobItem } from '../EntityTypes'
+import { NPC, DialogFragment, DialogVariant, DialogLines } from '../types/NPCEntityTypes'
+import { MobItem } from '../types/MobEntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import ItemPickerModal from './ItemPickerModal'
 import MobTypePickerModal from './MobTypePickerModal'
 import { useProject } from '../ProjectContext'
-import { Search, Plus, Trash2 } from 'lucide-react'
+import { Search, Plus, Trash2, MessageSquare } from 'lucide-react'
 
 interface EditNPCModalProps {
   editingItem: NPC;
@@ -22,7 +23,7 @@ const EditNPCModal: React.FC<EditNPCModalProps> = ({
   onUpdateItem 
 }) => {
   const { projectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'general' | 'inventory' | 'raw'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'inventory' | 'dialogs' | 'raw'>('general');
   const [mobTypePickerOpen, setMobTypePickerOpen] = useState(false);
   const [itemPickerTarget, setItemPickerTarget] = useState<'weapon' | 'armor' | 'backpack' | 'list' | null>(null);
   const [itemPickerIndex, setItemPickerIndex] = useState<number>(-1);
@@ -72,6 +73,22 @@ const EditNPCModal: React.FC<EditNPCModalProps> = ({
     }
     setItemPickerTarget(null);
     setItemPickerIndex(-1);
+  };
+
+  const addDialogFragment = () => {
+    const newDialog = [...(editingItem.dialog || []), { key: 'new_key', dialog: '' }];
+    onUpdateItem({ ...editingItem, dialog: newDialog });
+  };
+
+  const removeDialogFragment = (index: number) => {
+    const newDialog = (editingItem.dialog || []).filter((_, i) => i !== index);
+    onUpdateItem({ ...editingItem, dialog: newDialog });
+  };
+
+  const handleDialogChange = (index: number, field: keyof DialogFragment, value: any) => {
+    const newDialog = [...(editingItem.dialog || [])];
+    newDialog[index] = { ...newDialog[index], [field]: value };
+    onUpdateItem({ ...editingItem, dialog: newDialog });
   };
 
   const renderGeneralTab = () => (
@@ -184,9 +201,72 @@ const EditNPCModal: React.FC<EditNPCModalProps> = ({
     </div>
   );
 
+  const renderDialogsTab = () => (
+    <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <label>Dialog Fragments</label>
+            <button onClick={addDialogFragment} style={{ padding: '4px 12px', fontSize: '0.8rem' }}><Plus size={14} /> Add Fragment</button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {(editingItem.dialog || []).map((fragment, idx) => (
+                <div key={idx} style={{ background: '#2d2d2d', padding: '15px', borderRadius: '4px', border: '1px solid #444' }}>
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center' }}>
+                        <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                            <label>Key</label>
+                            <input 
+                                value={fragment.key} 
+                                onChange={(e) => handleDialogChange(idx, 'key', e.target.value)} 
+                                placeholder="e.g. greeting, job, name"
+                            />
+                        </div>
+                        <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                            <label>Synonym Of</label>
+                            <input 
+                                value={fragment.synonym || ''} 
+                                onChange={(e) => handleDialogChange(idx, 'synonym', e.target.value)} 
+                                placeholder="Optional"
+                            />
+                        </div>
+                        <button onClick={() => removeDialogFragment(idx)} style={{ background: '#a33', marginTop: '20px', padding: '6px' }}>
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                    
+                    <div className="form-group">
+                        <label>Content (Dialog Lines or Variants as JSON)</label>
+                        <textarea 
+                            style={{ width: '100%', height: '120px', backgroundColor: '#1e1e1e', color: '#d4d4d4', fontFamily: 'monospace', fontSize: '0.8rem', border: '1px solid #555', padding: '8px' }}
+                            value={JSON.stringify(fragment.variants ? { variants: fragment.variants } : { dialog: fragment.dialog }, null, 2)}
+                            onChange={(e) => {
+                                try {
+                                    const parsed = JSON.parse(e.target.value);
+                                    if (parsed.variants) {
+                                        handleDialogChange(idx, 'variants', parsed.variants);
+                                        handleDialogChange(idx, 'dialog', undefined);
+                                    } else if (parsed.dialog) {
+                                        handleDialogChange(idx, 'dialog', parsed.dialog);
+                                        handleDialogChange(idx, 'variants', undefined);
+                                    }
+                                } catch (err) {
+                                    // Invalid JSON, wait for user to fix
+                                }
+                            }}
+                        />
+                    </div>
+                </div>
+            ))}
+            {(!editingItem.dialog || editingItem.dialog.length === 0) && (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#888', border: '1px dashed #444' }}>
+                    No dialog fragments defined yet.
+                </div>
+            )}
+        </div>
+    </div>
+  );
+
   const renderRawTab = () => (
     <div className="form-group">
-        <label>JSON Data (for complex fields like dialog, schedule, triggers)</label>
+        <label>JSON Data (Full NPC Object)</label>
         <textarea 
             style={{ width: '100%', height: '350px', backgroundColor: '#1e1e1e', color: '#d4d4d4', fontFamily: 'monospace', border: '1px solid #555', padding: '10px' }}
             value={JSON.stringify(editingItem, null, 2)}
@@ -204,7 +284,7 @@ const EditNPCModal: React.FC<EditNPCModalProps> = ({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content" style={{ width: '750px', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div className="modal-content" style={{ width: '850px', maxHeight: '90vh', overflowY: 'auto' }}>
         <h3>{editIndex >= 0 ? 'Edit' : 'Add'} NPC</h3>
         
         {/* Preview Row */}
@@ -223,12 +303,14 @@ const EditNPCModal: React.FC<EditNPCModalProps> = ({
         <div className="modal-tabs" style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #444' }}>
             <button className={`tab-btn ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')} style={{ padding: '8px 15px', background: activeTab === 'general' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>General</button>
             <button className={`tab-btn ${activeTab === 'inventory' ? 'active' : ''}`} onClick={() => setActiveTab('inventory')} style={{ padding: '8px 15px', background: activeTab === 'inventory' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>Inventory</button>
+            <button className={`tab-btn ${activeTab === 'dialogs' ? 'active' : ''}`} onClick={() => setActiveTab('dialogs')} style={{ padding: '8px 15px', background: activeTab === 'dialogs' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><MessageSquare size={14}/> Dialogs</div></button>
             <button className={`tab-btn ${activeTab === 'raw' ? 'active' : ''}`} onClick={() => setActiveTab('raw')} style={{ padding: '8px 15px', background: activeTab === 'raw' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>JSON</button>
         </div>
 
         <div className="modal-tab-content" style={{ marginBottom: '20px' }}>
             {activeTab === 'general' && renderGeneralTab()}
             {activeTab === 'inventory' && renderInventoryTab()}
+            {activeTab === 'dialogs' && renderDialogsTab()}
             {activeTab === 'raw' && renderRawTab()}
         </div>
 

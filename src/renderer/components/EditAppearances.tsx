@@ -1,11 +1,11 @@
 import React from 'react'
 import { Plus, Save, Trash2 } from 'lucide-react'
-import { Appearance } from '../EntityTypes'
+import { Tileset } from '../types/AppearanceEntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import { useProject } from '../ProjectContext'
 
 interface EditAppearancesProps {
-  items: Appearance[];
+  items: Tileset[];
   selectedAppearanceIndex: number | null;
   onAddItem: (listType: 'mobs' | 'items') => void;
   onSave: () => void;
@@ -32,7 +32,7 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
       )
   }
 
-  const selectedAppearance = items[selectedAppearanceIndex] as Appearance;
+  const selectedAppearance = items[selectedAppearanceIndex] as Tileset;
 
   return (
     <div className="main-area">

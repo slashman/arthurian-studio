@@ -1,5 +1,5 @@
 import React from 'react'
-import { ItemAppearance } from '../EntityTypes'
+import { ItemAppearance } from '../types/AppearanceEntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import { useProject } from '../ProjectContext'
 

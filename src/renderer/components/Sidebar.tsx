@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword } from 'lucide-react'
-import { Appearance } from '../EntityTypes'
+import { Tileset } from '../types/AppearanceEntityTypes'
 
 interface SidebarProps {
   activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs';
-  appearances: Appearance[];
+  appearances: Tileset[];
   selectedAppearanceIndex: number | null;
   onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs') => void;
   onSelectAppearance: (index: number) => void;

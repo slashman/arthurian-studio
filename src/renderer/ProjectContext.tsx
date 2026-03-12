@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react'
-import { ProjectData } from './EntityTypes'
+import { ProjectData } from './types/GeneralEntityTypes'
 
 interface ProjectContextType {
   projectData: ProjectData | null;

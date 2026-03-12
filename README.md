@@ -39,7 +39,7 @@ The project follows an Electron + React (Vite) structure:
 - `src/preload`: Preload scripts for bridging the main and renderer processes.
 - `src/renderer`: React-based UI components and application logic.
   - `components/`: UI components like `AppearanceCanvas`, `ProjectLoader`, etc.
-  - `EntityTypes.ts`: Central TypeScript interfaces for project data.
+  - `types/`: Split TypeScript interfaces for different project entities (NPCs, Items, etc.).
   - `ProjectContext.tsx`: React Context for global state management.
 
 ## Project Data
@@ -59,4 +59,4 @@ A sample project is included in the `testProject` directory. This can be used to
 
 ## Type Safety
 
-Maintain strict adherence to TypeScript interfaces defined in `src/renderer/EntityTypes.ts` for all project data to ensure consistency across the application.
+Maintain strict adherence to TypeScript interfaces defined in `src/renderer/types/` for all project data to ensure consistency across the application.

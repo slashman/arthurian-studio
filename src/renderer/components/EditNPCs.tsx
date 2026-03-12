@@ -1,6 +1,6 @@
 import React from 'react'
 import { Plus, Save, Trash2 } from 'lucide-react'
-import { NPC } from '../EntityTypes'
+import { NPC } from '../types/NPCEntityTypes'
 import AppearanceCanvas from './AppearanceCanvas'
 import { useProject } from '../ProjectContext'
 

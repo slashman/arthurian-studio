@@ -11,7 +11,8 @@ import EditMobAppearanceModal from './components/EditMobAppearanceModal'
 import EditItemAppearanceModal from './components/EditItemAppearanceModal'
 import ProjectLoader from './components/ProjectLoader'
 import { useProject } from './ProjectContext'
-import { ProjectData } from './EntityTypes'
+import { ProjectData } from './types/GeneralEntityTypes'
+
 
 function App() {
   const { projectData, setProjectData } = useProject();
