@@ -69,8 +69,9 @@ const EditWorld: React.FC<EditWorldProps> = ({
       </div>
 
       <h2>Map Chunks</h2>
+      <p style={{ color: '#888', marginBottom: '20px' }}>Manage the layout of your world by placing map files on the global grid.</p>
 
-      <div style={{ background: '#1a1a1a', borderRadius: '4px', padding: '20px', overflow: 'auto', border: '1px solid #333', height: 'calc(100vh - 150px)' }}>
+      <div style={{ background: '#1a1a1a', borderRadius: '4px', padding: '20px', overflow: 'auto', border: '1px solid #333', height: 'calc(100vh - 180px)' }}>
           <div style={{ 
               display: 'grid', 
               gridTemplateColumns: `repeat(${chunksWidth}, 150px)`,

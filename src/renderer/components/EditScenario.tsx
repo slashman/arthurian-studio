@@ -66,6 +66,7 @@ const EditScenario: React.FC<EditScenarioProps> = ({
       </div>
 
       <h2>Scenario Configuration</h2>
+      <p style={{ color: '#888', marginBottom: '20px' }}>Defines the entry point of your game, including starting position, time, and initial party members.</p>
 
       <div className="tab-content" style={{ marginTop: '20px', maxWidth: '800px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>

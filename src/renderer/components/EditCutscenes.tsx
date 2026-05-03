@@ -29,6 +29,7 @@ const EditCutscenes: React.FC<EditCutscenesProps> = ({
       </div>
 
       <h2>Cutscenes</h2>
+      <p style={{ color: '#888', marginBottom: '20px' }}>Dialogue-based story sequences that can be triggered at game start or through NPC interactions. They consist of a series of text lines displayed sequentially.</p>
 
       <table>
         <thead>

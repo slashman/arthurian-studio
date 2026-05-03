@@ -25,7 +25,7 @@ const EditTilesets: React.FC<EditTilesetsProps> = ({
       </div>
 
       <h2>Tilesets</h2>
-      <p style={{ color: '#888', marginBottom: '20px' }}>Manage the graphic assets used for tiles, creatures, and items.</p>
+      <p style={{ color: '#888', marginBottom: '20px' }}>Manage the graphical assets (spritesheets) used in your project for world tiles, creatures, and items.</p>
 
       <div className="entity-list">
         <table>

@@ -44,6 +44,7 @@ const EditObjectTypes: React.FC<EditObjectTypesProps> = ({
       </div>
 
       <h2>Interactables</h2>
+      <p style={{ color: '#888', marginBottom: '20px' }}>Fixed map objects that players can interact with but typically cannot pick up (e.g., signs, switches, static decorations).</p>
 
       <table>
         <thead>

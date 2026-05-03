@@ -29,7 +29,7 @@ const EditWorldConfig: React.FC<EditWorldConfigProps> = ({
       </div>
 
       <h2>World Configuration</h2>
-      <p style={{ color: '#888', marginBottom: '30px' }}>Configure the fundamental dimensions of your game world.</p>
+      <p style={{ color: '#888', marginBottom: '30px' }}>Defines the fundamental metrics of your game world, including tile and chunk dimensions.</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', maxWidth: '600px' }}>
         {/* Tile Size Section */}

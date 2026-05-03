@@ -44,6 +44,7 @@ const EditItems: React.FC<EditItemsProps> = ({
       </div>
 
       <h2>Items</h2>
+      <p style={{ color: '#888', marginBottom: '20px' }}>Objects that can be placed in the world, picked up, or used. Includes weapons, armor, and specialized interactables.</p>
 
       <table>
         <thead>

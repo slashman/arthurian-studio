@@ -44,6 +44,7 @@ const EditMobTypes: React.FC<EditMobTypesProps> = ({
       </div>
 
       <h2>Creatures</h2>
+      <p style={{ color: '#888', marginBottom: '20px' }}>These are the templates for all living things in the world, defining their stats and base appearances.</p>
 
       <table>
         <thead>

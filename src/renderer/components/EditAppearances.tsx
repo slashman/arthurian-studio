@@ -27,6 +27,7 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
       return (
           <div className="main-area">
               <h2>Appearances</h2>
+              <p style={{ color: '#888', marginBottom: '20px' }}>Appearances map specific regions of a Tileset to entity IDs, defining how Creatures and Items look in the game.</p>
               <p style={{ color: '#858585' }}>Select a tileset in the explorer to edit.</p>
           </div>
       )
@@ -41,6 +42,7 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
       </div>
 
       <h2>Tileset: {selectedAppearance.tileset}</h2>
+      <p style={{ color: '#888', marginBottom: '20px' }}>Appearances map specific regions of a Tileset to entity IDs, defining how Creatures and Items look in the game.</p>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
           <h3>Creatures</h3>

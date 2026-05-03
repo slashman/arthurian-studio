@@ -48,6 +48,7 @@ const EditNPCs: React.FC<EditNPCsProps> = ({
       </div>
 
       <h2>NPCs</h2>
+      <p style={{ color: '#888', marginBottom: '20px' }}>Unique instances of characters in the world. NPCs are built upon Creature templates but have specific behaviors, dialogs and schedules.</p>
 
       <table>
         <thead>
