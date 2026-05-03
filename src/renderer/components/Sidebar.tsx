@@ -80,12 +80,12 @@ const Sidebar: React.FC<SidebarProps> = ({
             <FileText size={16} /> Cutscenes
           </div>
 
-          {/* Mob Types Header */}
+          {/* Creatures Header */}
           <div 
             className={`sidebar-item ${activeTab === 'mobTypes' ? 'active' : ''}`}
             onClick={() => onSelectTab('mobTypes')}
           >
-            <Users size={16} /> Mob Types
+            <Users size={16} /> Creatures
           </div>
 
           {/* NPCs Header */}

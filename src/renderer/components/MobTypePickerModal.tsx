@@ -37,17 +37,18 @@ const MobTypePickerModal: React.FC<MobTypePickerModalProps> = ({ onSelect, onCan
     <div className="modal-overlay" style={{ zIndex: 2000 }}>
       <div className="modal-content" style={{ width: '80%', height: '80%', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3>Select Mob Type</h3>
+            <h3>Select Creature</h3>
             <button onClick={onCancel} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>
                 <X size={24} />
             </button>
-        </div>
+            </div>
 
-        <div className="form-group" style={{ marginBottom: '20px' }}>
+            <div className="form-group" style={{ marginBottom: '20px' }}>
             <div style={{ position: 'relative' }}>
                 <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
                 <input 
-                    placeholder="Search mob type ID or name..." 
+                    placeholder="Search creature ID or name..." 
+ 
                     style={{ paddingLeft: '35px', width: '100%' }}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -102,7 +103,7 @@ const MobTypePickerModal: React.FC<MobTypePickerModalProps> = ({ onSelect, onCan
             </div>
             {filteredMobTypes.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
-                    No mob types found matching "{searchTerm}"
+                    No creatures found matching "{searchTerm}"
                 </div>
             )}
         </div>

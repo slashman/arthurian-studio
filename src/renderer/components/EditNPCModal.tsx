@@ -89,10 +89,10 @@ const EditNPCModal: React.FC<EditNPCModalProps> = ({
             <input value={editingItem.name || ''} onChange={(e) => onUpdateItem({...editingItem, name: e.target.value})} />
         </div>
         <div className="form-group">
-            <label>Mob Type</label>
+            <label>Creature</label>
             <div style={{ display: 'flex', gap: '5px' }}>
                 <input style={{ flexGrow: 1 }} value={editingItem.type || ''} onChange={(e) => onUpdateItem({...editingItem, type: e.target.value})} />
-                <button onClick={() => setMobTypePickerOpen(true)} style={{ padding: '4px 8px' }} title="Browse mob types"><Search size={14} /></button>
+                <button onClick={() => setMobTypePickerOpen(true)} style={{ padding: '4px 8px' }} title="Browse creatures"><Search size={14} /></button>
             </div>
         </div>
         <div className="form-group">
@@ -214,7 +214,7 @@ const EditNPCModal: React.FC<EditNPCModalProps> = ({
         {/* Preview Row */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px', padding: '10px', background: '#1a1a1a', borderRadius: '4px', border: '1px solid #333' }}>
             <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '5px' }}>Mob Type Appearance</div>
+                <div style={{ fontSize: '0.7rem', color: '#888', marginBottom: '5px' }}>Creature Appearance</div>
                 <AppearanceCanvas 
                     tilesetId={appearancePreview?.tilesetId || ''}
                     frameIndex={appearancePreview?.frameIndex || 0}

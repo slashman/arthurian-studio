@@ -33,7 +33,7 @@ const EditTilesetModal: React.FC<EditTilesetModalProps> = ({
             <input 
               value={editingItem.id || ''} 
               onChange={(e) => onUpdateItem({...editingItem, id: e.target.value})} 
-              placeholder="e.g. mobs, terrain, items"
+              placeholder="e.g. creatures, terrain, items"
             />
           </div>
           <div className="form-group">

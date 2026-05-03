@@ -43,8 +43,8 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
       <h2>Tileset: {selectedAppearance.tileset}</h2>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
-          <h3>Mobs</h3>
-          <button onClick={() => onAddItem('mobs')} style={{ padding: '4px 8px', fontSize: '0.8rem' }}><Plus size={14} /> Add Mob Appearance</button>
+          <h3>Creatures</h3>
+          <button onClick={() => onAddItem('mobs')} style={{ padding: '4px 8px', fontSize: '0.8rem' }}><Plus size={14} /> Add Creature Appearance</button>
       </div>
       <table>
         <thead>

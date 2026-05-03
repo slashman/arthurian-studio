@@ -55,7 +55,7 @@ const EditNPCs: React.FC<EditNPCsProps> = ({
             <th style={{ width: '50px' }}>Icon</th>
             <th>ID</th>
             <th>Name</th>
-            <th>Type (MobType)</th>
+            <th>Creature</th>
             <th>Alignment</th>
             <th style={{ width: '50px' }}>Actions</th>
           </tr>

@@ -75,7 +75,7 @@ const EditMobAppearanceModal: React.FC<EditMobAppearanceModalProps> = ({
   return (
     <div className="modal-overlay">
       <div className="modal-content" style={{ width: '700px', maxHeight: '90vh', overflowY: 'auto' }}>
-        <h3>{editIndex >= 0 ? 'Edit' : 'Add'} Mob Appearance</h3>
+        <h3>{editIndex >= 0 ? 'Edit' : 'Add'} Creature Appearance</h3>
         
         <div className="form-group" style={{ marginBottom: '20px' }}>
             <label>ID</label>

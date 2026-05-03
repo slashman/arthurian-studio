@@ -43,7 +43,7 @@ const EditMobTypes: React.FC<EditMobTypesProps> = ({
         <button onClick={onSave}><Save size={16} /> Save Changes</button>
       </div>
 
-      <h2>Mob Types</h2>
+      <h2>Creatures</h2>
 
       <table>
         <thead>

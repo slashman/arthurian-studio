@@ -90,7 +90,7 @@ const EditMobTypeModal: React.FC<EditMobTypeModalProps> = ({
   return (
     <div className="modal-overlay">
       <div className="modal-content" style={{ width: '650px', maxHeight: '90vh', overflowY: 'auto' }}>
-        <h3>{editIndex >= 0 ? 'Edit' : 'Add'} Mob Type</h3>
+        <h3>{editIndex >= 0 ? 'Edit' : 'Add'} Creature</h3>
         
         {/* Preview Row */}
         <div style={{ display: 'flex', gap: '30px', marginBottom: '25px', padding: '10px', background: '#1a1a1a', borderRadius: '4px', border: '1px solid #333' }}>
