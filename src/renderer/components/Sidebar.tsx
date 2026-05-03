@@ -27,6 +27,46 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="sidebar-header">Explorer</div>
       
       <div style={{ flexGrow: 1, overflowY: 'auto' }}>
+          {/* Scenario Header */}
+          <div 
+            className={`sidebar-item ${activeTab === 'scenario' ? 'active' : ''}`}
+            onClick={() => onSelectTab('scenario')}
+          >
+            <FileText size={16} /> Scenario
+          </div>
+
+          {/* NPCs Header */}
+          <div 
+            className={`sidebar-item ${activeTab === 'npcs' ? 'active' : ''}`}
+            onClick={() => onSelectTab('npcs')}
+          >
+            <Users size={16} /> NPCs
+          </div>
+
+          {/* Creatures Header */}
+          <div 
+            className={`sidebar-item ${activeTab === 'mobTypes' ? 'active' : ''}`}
+            onClick={() => onSelectTab('mobTypes')}
+          >
+            <Users size={16} /> Creatures
+          </div>
+
+          {/* Items Header */}
+          <div 
+            className={`sidebar-item ${activeTab === 'items' ? 'active' : ''}`}
+            onClick={() => onSelectTab('items')}
+          >
+            <Sword size={16} /> Items
+          </div>
+
+          {/* Interactables Header */}
+          <div 
+            className={`sidebar-item ${activeTab === 'objectTypes' ? 'active' : ''}`}
+            onClick={() => onSelectTab('objectTypes')}
+          >
+            <Box size={16} /> Interactables
+          </div>
+
           {/* World Header */}
           <div 
             className={`sidebar-item ${(activeTab === 'world-config' || activeTab === 'world-maps') ? 'active' : ''}`}
@@ -62,54 +102,12 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
 
-          {/* Tilesets Header */}
-          <div 
-            className={`sidebar-item ${activeTab === 'tilesets' ? 'active' : ''}`}
-            onClick={() => onSelectTab('tilesets')}
-          >
-            <Layers size={16} /> Tilesets
-          </div>
-
-          {/* Scenario Header */}
-
           {/* Cutscenes Header */}
           <div 
             className={`sidebar-item ${activeTab === 'cutscenes' ? 'active' : ''}`}
             onClick={() => onSelectTab('cutscenes')}
           >
             <FileText size={16} /> Cutscenes
-          </div>
-
-          {/* Creatures Header */}
-          <div 
-            className={`sidebar-item ${activeTab === 'mobTypes' ? 'active' : ''}`}
-            onClick={() => onSelectTab('mobTypes')}
-          >
-            <Users size={16} /> Creatures
-          </div>
-
-          {/* NPCs Header */}
-          <div 
-            className={`sidebar-item ${activeTab === 'npcs' ? 'active' : ''}`}
-            onClick={() => onSelectTab('npcs')}
-          >
-            <Users size={16} /> NPCs
-          </div>
-
-          {/* Items Header */}
-          <div 
-            className={`sidebar-item ${activeTab === 'items' ? 'active' : ''}`}
-            onClick={() => onSelectTab('items')}
-          >
-            <Sword size={16} /> Items
-          </div>
-
-          {/* Interactables Header */}
-          <div 
-            className={`sidebar-item ${activeTab === 'objectTypes' ? 'active' : ''}`}
-            onClick={() => onSelectTab('objectTypes')}
-          >
-            <Box size={16} /> Interactables
           </div>
 
           {/* Appearances Header */}
@@ -145,6 +143,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                 ))}
             </div>
           )}
+
+          {/* Tilesets Header */}
+          <div 
+            className={`sidebar-item ${activeTab === 'tilesets' ? 'active' : ''}`}
+            onClick={() => onSelectTab('tilesets')}
+          >
+            <Layers size={16} /> Tilesets
+          </div>
       </div>
 
       <div style={{ borderTop: '1px solid #333', padding: '10px 0' }}>
