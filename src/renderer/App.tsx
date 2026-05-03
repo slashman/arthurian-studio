@@ -213,6 +213,7 @@ function App() {
         selectedAppearanceIndex={selectedAppearanceIndex}
         onSelectTab={handleSelectTab} 
         onSelectAppearance={handleSelectAppearance}
+        onLoadProject={handleOpenProject}
       />
 
       {activeTab === 'scenario' ? (
