@@ -3,6 +3,7 @@ import { Tileset } from './AppearanceEntityTypes';
 import { Item } from './ItemEntityTypes';
 import { NPC } from './NPCEntityTypes';
 import { ObjectType } from './ObjectEntityTypes';
+import { Scenario } from './ScenarioEntityTypes';
 
 export interface ArthurianProject {
   studioVersion: string;
@@ -12,6 +13,7 @@ export interface ArthurianProject {
   itemsFile: string;
   npcsFile: string;
   objectTypesFile: string;
+  scenarioFile: string;
   tileWidth: number;
   tileHeight: number;
   tilesets: TilesetDefinition[];
@@ -33,5 +35,6 @@ export interface ProjectData {
     items: Item[];
     npcs: NPC[];
     objectTypes: ObjectType[];
+    scenario: Scenario;
   };
 }

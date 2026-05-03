@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box } from 'lucide-react'
+import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box, FileText, Globe } from 'lucide-react'
 import { Tileset } from '../types/AppearanceEntityTypes'
 
 interface SidebarProps {
-  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes';
+  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world';
   appearances: Tileset[];
   selectedAppearanceIndex: number | null;
-  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes') => void;
+  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world') => void;
   onSelectAppearance: (index: number) => void;
 }
 
@@ -23,6 +23,30 @@ const Sidebar: React.FC<SidebarProps> = ({
     <div className="sidebar">
       <div className="sidebar-header">Explorer</div>
       
+      {/* World Header */}
+      <div 
+        className={`sidebar-item ${activeTab === 'world' ? 'active' : ''}`}
+        onClick={() => onSelectTab('world')}
+      >
+        <Globe size={16} /> World
+      </div>
+
+      {/* Scenario Header */}
+      <div 
+        className={`sidebar-item ${activeTab === 'scenario' ? 'active' : ''}`}
+        onClick={() => onSelectTab('scenario')}
+      >
+        <FileText size={16} /> Scenario
+      </div>
+
+      {/* Cutscenes Header */}
+      <div 
+        className={`sidebar-item ${activeTab === 'cutscenes' ? 'active' : ''}`}
+        onClick={() => onSelectTab('cutscenes')}
+      >
+        <FileText size={16} /> Cutscenes
+      </div>
+
       {/* Mob Types Header */}
       <div 
         className={`sidebar-item ${activeTab === 'mobTypes' ? 'active' : ''}`}

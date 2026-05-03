@@ -97,12 +97,14 @@ ipcMain.handle('open-project', async () => {
   const itemsPath = path.resolve(projectDir, project.itemsFile || 'data/items.json')
   const npcsPath = path.resolve(projectDir, project.npcsFile || 'data/npcs.json')
   const objectTypesPath = path.resolve(projectDir, project.objectTypesFile || 'data/objectTypes.json')
+  const scenarioPath = path.resolve(projectDir, project.scenarioFile || 'data/scenario.json')
 
   const mobTypes = JSON.parse(fs.readFileSync(mobTypesPath, 'utf8'))
   const appearances = JSON.parse(fs.readFileSync(appearancesPath, 'utf8'))
   const items = JSON.parse(fs.readFileSync(itemsPath, 'utf8'))
   const npcs = JSON.parse(fs.readFileSync(npcsPath, 'utf8'))
   const objectTypes = fs.existsSync(objectTypesPath) ? JSON.parse(fs.readFileSync(objectTypesPath, 'utf8')) : []
+  const scenario = fs.existsSync(scenarioPath) ? JSON.parse(fs.readFileSync(scenarioPath, 'utf8')) : null
 
   return {
     filePath,
@@ -112,7 +114,8 @@ ipcMain.handle('open-project', async () => {
       appearances,
       items,
       npcs,
-      objectTypes
+      objectTypes,
+      scenario
     }
   }
 })

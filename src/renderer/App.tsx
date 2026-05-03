@@ -11,6 +11,10 @@ import EditObjectTypeModal from './components/EditObjectTypeModal'
 import EditMobAppearanceModal from './components/EditMobAppearanceModal'
 import EditItemAppearanceModal from './components/EditItemAppearanceModal'
 import EditObjectTypes from './components/EditObjectTypes'
+import EditScenario from './components/EditScenario'
+import EditCutscenes from './components/EditCutscenes'
+import EditCutsceneModal from './components/EditCutsceneModal'
+import EditWorld from './components/EditWorld'
 import ProjectLoader from './components/ProjectLoader'
 import { useProject } from './ProjectContext'
 import { ProjectData } from './types/GeneralEntityTypes'
@@ -18,7 +22,7 @@ import { ProjectData } from './types/GeneralEntityTypes'
 
 function App() {
   const { projectData, setProjectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes'>('mobTypes')
+  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world'>('mobTypes')
   const [selectedAppearanceIndex, setSelectedAppearanceIndex] = useState<number | null>(null)
   
   const [editingItem, setEditingItem] = useState<any | null>(null)
@@ -45,10 +49,11 @@ function App() {
     else if (activeTab === 'items') targetFileRelative = project.itemsFile;
     else if (activeTab === 'npcs') targetFileRelative = project.npcsFile;
     else if (activeTab === 'objectTypes') targetFileRelative = project.objectTypesFile || 'data/objectTypes.json';
+    else if (activeTab === 'scenario' || activeTab === 'cutscenes' || activeTab === 'world') targetFileRelative = project.scenarioFile || 'data/scenario.json';
 
     const fullPath = projectDir + (projectDir.includes('/') ? '/' : '\\') + targetFileRelative;
     
-    const dataToSave = projectData.data[activeTab];
+    const dataToSave = (activeTab === 'scenario' || activeTab === 'cutscenes' || activeTab === 'world') ? projectData.data.scenario : projectData.data[activeTab as keyof typeof projectData.data];
     await window.electron.saveData(fullPath, dataToSave)
     alert('Saved!')
   }
@@ -84,6 +89,12 @@ function App() {
       const currentList = [...newData.data.objectTypes];
       currentList.splice(index, 1);
       newData.data.objectTypes = currentList;
+    } else if (activeTab === 'cutscenes') {
+      const sceneIds = Object.keys(newData.data.scenario.scenes);
+      const targetId = sceneIds[index];
+      const newScenes = { ...newData.data.scenario.scenes };
+      delete newScenes[targetId];
+      newData.data.scenario = { ...newData.data.scenario, scenes: newScenes };
     } else if (activeTab === 'appearances' && selectedAppearanceIndex !== null && subtype) {
       const currentAppearances = [...newData.data.appearances];
       const targetAppearance = { ...currentAppearances[selectedAppearanceIndex] };
@@ -140,6 +151,20 @@ function App() {
             currentList.push(editingItem)
         }
         newData.data.objectTypes = currentList;
+    } else if (activeTab === 'cutscenes') {
+        const newScenes = { ...newData.data.scenario.scenes };
+        if (editIndex >= 0) {
+            const oldId = Object.keys(newData.data.scenario.scenes)[editIndex];
+            if (oldId !== editingItem.id) {
+                delete newScenes[oldId];
+                // Also update starting state if needed
+                if (newData.data.scenario.startingState.scene === oldId) {
+                    newData.data.scenario.startingState.scene = editingItem.id;
+                }
+            }
+        }
+        newScenes[editingItem.id] = editingItem.lines;
+        newData.data.scenario = { ...newData.data.scenario, scenes: newScenes };
     } else if (activeTab === 'appearances' && selectedAppearanceIndex !== null && editingSubtype) {
         const currentAppearances = [...newData.data.appearances];
         const targetAppearance = { ...currentAppearances[selectedAppearanceIndex] };
@@ -165,7 +190,7 @@ function App() {
     setEditingSubtype(null)
   }
 
-  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes') => {
+  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world') => {
       setActiveTab(tab);
       if (tab !== 'appearances') setSelectedAppearanceIndex(null);
   }
@@ -189,7 +214,27 @@ function App() {
         onSelectAppearance={handleSelectAppearance}
       />
 
-      {activeTab === 'mobTypes' ? (
+      {activeTab === 'scenario' ? (
+          <EditScenario 
+            scenario={projectData.data.scenario}
+            onSave={handleSave}
+            onUpdateScenario={(updated) => setProjectData({ ...projectData, data: { ...projectData.data, scenario: updated } })}
+          />
+      ) : activeTab === 'world' ? (
+          <EditWorld 
+            scenario={projectData.data.scenario}
+            onSave={handleSave}
+            onUpdateScenario={(updated) => setProjectData({ ...projectData, data: { ...projectData.data, scenario: updated } })}
+          />
+      ) : activeTab === 'cutscenes' ? (
+          <EditCutscenes 
+            items={Object.entries(projectData.data.scenario.scenes).map(([id, lines]) => ({ id, lines }))}
+            onAddItem={() => handleAddItem()}
+            onSave={handleSave}
+            onEditItem={handleEditItem}
+            onDeleteItem={handleDeleteItem}
+          />
+      ) : activeTab === 'mobTypes' ? (
           <EditMobTypes 
             items={projectData.data.mobTypes}
             onAddItem={() => handleAddItem()}
@@ -264,6 +309,16 @@ function App() {
 
       {editingItem && activeTab === 'objectTypes' && (
         <EditObjectTypeModal 
+          editingItem={editingItem}
+          editIndex={editIndex}
+          onCancel={() => setEditingItem(null)}
+          onConfirm={saveEdit}
+          onUpdateItem={setEditingItem}
+        />
+      )}
+
+      {editingItem && activeTab === 'cutscenes' && (
+        <EditCutsceneModal 
           editingItem={editingItem}
           editIndex={editIndex}
           onCancel={() => setEditingItem(null)}
