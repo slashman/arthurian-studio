@@ -96,11 +96,13 @@ ipcMain.handle('open-project', async () => {
   const appearancesPath = path.resolve(projectDir, project.appearancesFile)
   const itemsPath = path.resolve(projectDir, project.itemsFile || 'data/items.json')
   const npcsPath = path.resolve(projectDir, project.npcsFile || 'data/npcs.json')
+  const objectTypesPath = path.resolve(projectDir, project.objectTypesFile || 'data/objectTypes.json')
 
   const mobTypes = JSON.parse(fs.readFileSync(mobTypesPath, 'utf8'))
   const appearances = JSON.parse(fs.readFileSync(appearancesPath, 'utf8'))
   const items = JSON.parse(fs.readFileSync(itemsPath, 'utf8'))
   const npcs = JSON.parse(fs.readFileSync(npcsPath, 'utf8'))
+  const objectTypes = fs.existsSync(objectTypesPath) ? JSON.parse(fs.readFileSync(objectTypesPath, 'utf8')) : []
 
   return {
     filePath,
@@ -109,7 +111,8 @@ ipcMain.handle('open-project', async () => {
       mobTypes,
       appearances,
       items,
-      npcs
+      npcs,
+      objectTypes
     }
   }
 })

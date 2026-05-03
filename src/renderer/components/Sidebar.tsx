@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword } from 'lucide-react'
+import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box } from 'lucide-react'
 import { Tileset } from '../types/AppearanceEntityTypes'
 
 interface SidebarProps {
-  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs';
+  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes';
   appearances: Tileset[];
   selectedAppearanceIndex: number | null;
-  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs') => void;
+  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes') => void;
   onSelectAppearance: (index: number) => void;
 }
 
@@ -45,6 +45,14 @@ const Sidebar: React.FC<SidebarProps> = ({
         onClick={() => onSelectTab('items')}
       >
         <Sword size={16} /> Items
+      </div>
+
+      {/* Interactables Header */}
+      <div 
+        className={`sidebar-item ${activeTab === 'objectTypes' ? 'active' : ''}`}
+        onClick={() => onSelectTab('objectTypes')}
+      >
+        <Box size={16} /> Interactables
       </div>
 
       {/* Appearances Header */}
