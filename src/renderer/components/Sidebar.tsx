@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box, FileText, Globe, Settings, FolderOpen, Layers } from 'lucide-react'
+import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box, FileText, Globe, Settings, FolderOpen, Layers, BookOpen } from 'lucide-react'
 import { Tileset } from '../types/AppearanceEntityTypes'
 
 interface SidebarProps {
-  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets';
+  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart';
   appearances: Tileset[];
   selectedAppearanceIndex: number | null;
-  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets') => void;
+  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart') => void;
   onSelectAppearance: (index: number) => void;
   onLoadProject: () => void;
 }
@@ -27,6 +27,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="sidebar-header">Explorer</div>
       
       <div style={{ flexGrow: 1, overflowY: 'auto' }}>
+          {/* Quickstart Header */}
+          <div 
+            className={`sidebar-item ${activeTab === 'quickstart' ? 'active' : ''}`}
+            onClick={() => onSelectTab('quickstart')}
+            style={{ borderBottom: '1px solid #333', marginBottom: '10px', paddingBottom: '10px' }}
+          >
+            <BookOpen size={16} color="#4ec9b0" /> Quickstart
+          </div>
+
           {/* Scenario Header */}
           <div 
             className={`sidebar-item ${activeTab === 'scenario' ? 'active' : ''}`}

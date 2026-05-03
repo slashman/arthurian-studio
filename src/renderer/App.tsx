@@ -18,6 +18,7 @@ import EditWorld from './components/EditWorld'
 import EditWorldConfig from './components/EditWorldConfig'
 import EditTilesets from './components/EditTilesets'
 import EditTilesetModal from './components/EditTilesetModal'
+import Quickstart from './components/Quickstart'
 import ProjectLoader from './components/ProjectLoader'
 import { useProject } from './ProjectContext'
 import { ProjectData } from './types/GeneralEntityTypes'
@@ -25,7 +26,7 @@ import { ProjectData } from './types/GeneralEntityTypes'
 
 function App() {
   const { projectData, setProjectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets'>('mobTypes')
+  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart'>('quickstart')
   const [selectedAppearanceIndex, setSelectedAppearanceIndex] = useState<number | null>(null)
 
   
@@ -209,7 +210,7 @@ function App() {
     setEditingSubtype(null)
   }
 
-  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets') => {
+  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart') => {
       setActiveTab(tab);
       if (tab !== 'appearances') setSelectedAppearanceIndex(null);
   }
@@ -234,7 +235,9 @@ function App() {
         onLoadProject={handleOpenProject}
       />
 
-      {activeTab === 'scenario' ? (
+      {activeTab === 'quickstart' ? (
+          <Quickstart onNavigate={handleSelectTab} />
+      ) : activeTab === 'scenario' ? (
           <EditScenario 
             scenario={projectData.data.scenario}
             onSave={handleSave}
