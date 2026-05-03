@@ -5,35 +5,7 @@
     "mobTypesFile": "data/mobTypes.json",
     "itemsFile": "data/items.json",
     "npcsFile": "data/npcs.json",
+    "tilesetsFile": "data/tilesets.json",
     "tileWidth": 16,
-    "tileHeight": 16,
-    "tilesets": [
-        {
-            "id": "mobs",
-            "file": "res/mobs.png"
-        },
-        {
-            "id": "player",
-            "file": "res/mobs.png"
-        },
-        {
-            "id": "blank",
-            "file": "res/blank.png"
-        },
-        {
-            "id": "items",
-            "file": "res/items.png"
-        },
-        {
-            "id": "terrain",
-            "file": "res/terrain.png"
-        },
-        {
-            "id": "portraits",
-            "file": "res/portraits.png",
-            "tileWidth": 20,
-            "tileHeight": 20
-        }
-
-    ]
+    "tileHeight": 16
 }

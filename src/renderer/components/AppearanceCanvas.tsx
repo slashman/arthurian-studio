@@ -17,8 +17,10 @@ const AppearanceCanvas: React.FC<AppearanceCanvasProps> = ({
 
   if (!projectData) return null;
 
-  // Find tileset definition
-  const tilesetDef = projectData.project.tilesets.find(ts => ts.id === tilesetId);
+  // Find tileset definition - handle both new data structure and old project structure for robustness
+  const tilesets = projectData.data.tilesets || (projectData.project as any).tilesets || [];
+  const tilesetDef = tilesets.find((ts: any) => ts.id === tilesetId);
+  
   const tileWidth = tilesetDef?.tileWidth || projectData.project.tileWidth || 16;
   const tileHeight = tilesetDef?.tileHeight || projectData.project.tileHeight || 16;
 

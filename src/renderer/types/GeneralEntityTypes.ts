@@ -13,10 +13,10 @@ export interface ArthurianProject {
   itemsFile: string;
   npcsFile: string;
   objectTypesFile: string;
+  tilesetsFile: string;
   scenarioFile: string;
   tileWidth: number;
   tileHeight: number;
-  tilesets: TilesetDefinition[];
 }
 
 export interface TilesetDefinition {
@@ -36,5 +36,6 @@ export interface ProjectData {
     npcs: NPC[];
     objectTypes: ObjectType[];
     scenario: Scenario;
+    tilesets: TilesetDefinition[];
   };
 }
