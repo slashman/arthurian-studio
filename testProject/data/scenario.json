@@ -9,7 +9,7 @@
   "startingState": {
     "minuteOfDay": 600,
     "party": [],
-    "scene": "introductions",
+    "scene": "introduction",
     "position": {
       "x": 235,
       "y": 43
@@ -38,7 +38,7 @@
       "name": "iolos",
       "filename": "iolos-hut.json",
       "x": 1,
-      "y": 3
+      "y": 0
     }
   ],
   "scenes": {

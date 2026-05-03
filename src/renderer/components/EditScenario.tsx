@@ -14,8 +14,6 @@ const EditScenario: React.FC<EditScenarioProps> = ({
   onSave, 
   onUpdateScenario 
 }) => {
-  const [activeTab, setActiveTab] = useState<'config' | 'startingState'>('config');
-
   if (!scenario) {
     return (
         <div className="main-area">
@@ -26,13 +24,6 @@ const EditScenario: React.FC<EditScenarioProps> = ({
         </div>
     );
   }
-
-  const updateConfig = (field: keyof Scenario['config'], value: any) => {
-    onUpdateScenario({
-      ...scenario,
-      config: { ...scenario.config, [field]: value }
-    });
-  };
 
   const updateStartingState = (field: keyof Scenario['startingState'], value: any) => {
     onUpdateScenario({
@@ -59,38 +50,7 @@ const EditScenario: React.FC<EditScenarioProps> = ({
 
       <h2>Scenario Configuration</h2>
 
-      <div className="modal-tabs" style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid #444' }}>
-        <button className={`tab-btn ${activeTab === 'config' ? 'active' : ''}`} onClick={() => setActiveTab('config')} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 15px', background: activeTab === 'config' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><Settings size={14} /> Global Config</button>
-        <button className={`tab-btn ${activeTab === 'startingState' ? 'active' : ''}`} onClick={() => setActiveTab('startingState')} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 15px', background: activeTab === 'startingState' ? '#3a3a3a' : 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><PlayCircle size={14} /> Starting State</button>
-      </div>
-
-      <div className="tab-content">
-        {activeTab === 'config' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '800px' }}>
-            <div className="form-group">
-                <label>Tile Width</label>
-                <input type="number" value={scenario.config.tileWidth} onChange={(e) => updateConfig('tileWidth', parseInt(e.target.value) || 0)} />
-            </div>
-            <div className="form-group">
-                <label>Tile Height</label>
-                <input type="number" value={scenario.config.tileHeight} onChange={(e) => updateConfig('tileHeight', parseInt(e.target.value) || 0)} />
-            </div>
-            <div className="form-group">
-                <label>Chunk Size</label>
-                <input type="number" value={scenario.config.chunkSize} onChange={(e) => updateConfig('chunkSize', parseInt(e.target.value) || 0)} />
-            </div>
-            <div className="form-group">
-                <label>Chunks Width</label>
-                <input type="number" value={scenario.config.chunksWidth} onChange={(e) => updateConfig('chunksWidth', parseInt(e.target.value) || 0)} />
-            </div>
-            <div className="form-group">
-                <label>Chunks Height</label>
-                <input type="number" value={scenario.config.chunksHeight} onChange={(e) => updateConfig('chunksHeight', parseInt(e.target.value) || 0)} />
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'startingState' && (
+      <div className="tab-content" style={{ marginTop: '20px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', maxWidth: '800px' }}>
             <div className="form-group">
                 <label>Starting Minute of Day</label>
@@ -130,7 +90,6 @@ const EditScenario: React.FC<EditScenarioProps> = ({
                 />
             </div>
           </div>
-        )}
       </div>
     </div>
   )

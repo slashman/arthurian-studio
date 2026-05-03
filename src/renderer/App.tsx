@@ -15,6 +15,7 @@ import EditScenario from './components/EditScenario'
 import EditCutscenes from './components/EditCutscenes'
 import EditCutsceneModal from './components/EditCutsceneModal'
 import EditWorld from './components/EditWorld'
+import EditWorldConfig from './components/EditWorldConfig'
 import ProjectLoader from './components/ProjectLoader'
 import { useProject } from './ProjectContext'
 import { ProjectData } from './types/GeneralEntityTypes'
@@ -22,7 +23,7 @@ import { ProjectData } from './types/GeneralEntityTypes'
 
 function App() {
   const { projectData, setProjectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world'>('mobTypes')
+  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps'>('mobTypes')
   const [selectedAppearanceIndex, setSelectedAppearanceIndex] = useState<number | null>(null)
   
   const [editingItem, setEditingItem] = useState<any | null>(null)
@@ -49,11 +50,11 @@ function App() {
     else if (activeTab === 'items') targetFileRelative = project.itemsFile;
     else if (activeTab === 'npcs') targetFileRelative = project.npcsFile;
     else if (activeTab === 'objectTypes') targetFileRelative = project.objectTypesFile || 'data/objectTypes.json';
-    else if (activeTab === 'scenario' || activeTab === 'cutscenes' || activeTab === 'world') targetFileRelative = project.scenarioFile || 'data/scenario.json';
+    else if (activeTab === 'scenario' || activeTab === 'cutscenes' || activeTab === 'world-config' || activeTab === 'world-maps') targetFileRelative = project.scenarioFile || 'data/scenario.json';
 
     const fullPath = projectDir + (projectDir.includes('/') ? '/' : '\\') + targetFileRelative;
     
-    const dataToSave = (activeTab === 'scenario' || activeTab === 'cutscenes' || activeTab === 'world') ? projectData.data.scenario : projectData.data[activeTab as keyof typeof projectData.data];
+    const dataToSave = (activeTab === 'scenario' || activeTab === 'cutscenes' || activeTab === 'world-config' || activeTab === 'world-maps') ? projectData.data.scenario : projectData.data[activeTab as keyof typeof projectData.data];
     await window.electron.saveData(fullPath, dataToSave)
     alert('Saved!')
   }
@@ -190,7 +191,7 @@ function App() {
     setEditingSubtype(null)
   }
 
-  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world') => {
+  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps') => {
       setActiveTab(tab);
       if (tab !== 'appearances') setSelectedAppearanceIndex(null);
   }
@@ -220,7 +221,13 @@ function App() {
             onSave={handleSave}
             onUpdateScenario={(updated) => setProjectData({ ...projectData, data: { ...projectData.data, scenario: updated } })}
           />
-      ) : activeTab === 'world' ? (
+      ) : activeTab === 'world-config' ? (
+          <EditWorldConfig 
+            scenario={projectData.data.scenario}
+            onSave={handleSave}
+            onUpdateScenario={(updated) => setProjectData({ ...projectData, data: { ...projectData.data, scenario: updated } })}
+          />
+      ) : activeTab === 'world-maps' ? (
           <EditWorld 
             scenario={projectData.data.scenario}
             onSave={handleSave}
