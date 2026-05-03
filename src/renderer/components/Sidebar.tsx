@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box, FileText, Globe, Settings, FolderOpen } from 'lucide-react'
+import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box, FileText, Globe, Settings, FolderOpen, Layers } from 'lucide-react'
 import { Tileset } from '../types/AppearanceEntityTypes'
 
 interface SidebarProps {
-  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps';
+  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets';
   appearances: Tileset[];
   selectedAppearanceIndex: number | null;
-  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps') => void;
+  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets') => void;
   onSelectAppearance: (index: number) => void;
   onLoadProject: () => void;
 }
@@ -62,13 +62,15 @@ const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
 
-          {/* Scenario Header */}
+          {/* Tilesets Header */}
           <div 
-            className={`sidebar-item ${activeTab === 'scenario' ? 'active' : ''}`}
-            onClick={() => onSelectTab('scenario')}
+            className={`sidebar-item ${activeTab === 'tilesets' ? 'active' : ''}`}
+            onClick={() => onSelectTab('tilesets')}
           >
-            <FileText size={16} /> Scenario
+            <Layers size={16} /> Tilesets
           </div>
+
+          {/* Scenario Header */}
 
           {/* Cutscenes Header */}
           <div 

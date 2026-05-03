@@ -16,6 +16,8 @@ import EditCutscenes from './components/EditCutscenes'
 import EditCutsceneModal from './components/EditCutsceneModal'
 import EditWorld from './components/EditWorld'
 import EditWorldConfig from './components/EditWorldConfig'
+import EditTilesets from './components/EditTilesets'
+import EditTilesetModal from './components/EditTilesetModal'
 import ProjectLoader from './components/ProjectLoader'
 import { useProject } from './ProjectContext'
 import { ProjectData } from './types/GeneralEntityTypes'
@@ -23,8 +25,9 @@ import { ProjectData } from './types/GeneralEntityTypes'
 
 function App() {
   const { projectData, setProjectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps'>('mobTypes')
+  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets'>('mobTypes')
   const [selectedAppearanceIndex, setSelectedAppearanceIndex] = useState<number | null>(null)
+
   
   const [editingItem, setEditingItem] = useState<any | null>(null)
   const [editIndex, setEditIndex] = useState<number>(-1)
@@ -49,12 +52,15 @@ function App() {
     else if (activeTab === 'appearances') targetFileRelative = project.appearancesFile;
     else if (activeTab === 'items') targetFileRelative = project.itemsFile;
     else if (activeTab === 'npcs') targetFileRelative = project.npcsFile;
+    else if (activeTab === 'tilesets') targetFileRelative = project.tilesetsFile || 'data/tilesets.json';
     else if (activeTab === 'objectTypes') targetFileRelative = project.objectTypesFile || 'data/objectTypes.json';
     else if (activeTab === 'scenario' || activeTab === 'cutscenes' || activeTab === 'world-config' || activeTab === 'world-maps') targetFileRelative = project.scenarioFile || 'data/scenario.json';
 
     const fullPath = projectDir + (projectDir.includes('/') ? '/' : '\\') + targetFileRelative;
     
-    const dataToSave = (activeTab === 'scenario' || activeTab === 'cutscenes' || activeTab === 'world-config' || activeTab === 'world-maps') ? projectData.data.scenario : projectData.data[activeTab as keyof typeof projectData.data];
+    const dataToSave = (activeTab === 'scenario' || activeTab === 'cutscenes' || activeTab === 'world-config' || activeTab === 'world-maps') 
+        ? projectData.data.scenario 
+        : projectData.data[activeTab as keyof typeof projectData.data];
     await window.electron.saveData(fullPath, dataToSave)
     alert('Saved!')
   }
@@ -90,6 +96,10 @@ function App() {
       const currentList = [...newData.data.objectTypes];
       currentList.splice(index, 1);
       newData.data.objectTypes = currentList;
+    } else if (activeTab === 'tilesets') {
+      const currentList = [...newData.data.tilesets];
+      currentList.splice(index, 1);
+      newData.data.tilesets = currentList;
     } else if (activeTab === 'cutscenes') {
       const sceneIds = Object.keys(newData.data.scenario.scenes);
       const targetId = sceneIds[index];
@@ -152,6 +162,14 @@ function App() {
             currentList.push(editingItem)
         }
         newData.data.objectTypes = currentList;
+    } else if (activeTab === 'tilesets') {
+        const currentList = [...newData.data.tilesets];
+        if (editIndex >= 0) {
+            currentList[editIndex] = editingItem
+        } else {
+            currentList.push(editingItem)
+        }
+        newData.data.tilesets = currentList;
     } else if (activeTab === 'cutscenes') {
         const newScenes = { ...newData.data.scenario.scenes };
         if (editIndex >= 0) {
@@ -191,7 +209,7 @@ function App() {
     setEditingSubtype(null)
   }
 
-  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps') => {
+  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets') => {
       setActiveTab(tab);
       if (tab !== 'appearances') setSelectedAppearanceIndex(null);
   }
@@ -269,6 +287,14 @@ function App() {
       ) : activeTab === 'objectTypes' ? (
           <EditObjectTypes 
             items={projectData.data.objectTypes}
+            onAddItem={() => handleAddItem()}
+            onSave={handleSave}
+            onEditItem={handleEditItem}
+            onDeleteItem={handleDeleteItem}
+          />
+      ) : activeTab === 'tilesets' ? (
+          <EditTilesets 
+            items={projectData.data.tilesets}
             onAddItem={() => handleAddItem()}
             onSave={handleSave}
             onEditItem={handleEditItem}
@@ -352,6 +378,16 @@ function App() {
           editIndex={editIndex}
           tileset={projectData.data.appearances[selectedAppearanceIndex].tileset}
           onCancel={() => { setEditingItem(null); setEditingSubtype(null); }}
+          onConfirm={saveEdit}
+          onUpdateItem={setEditingItem}
+        />
+      )}
+
+      {editingItem && activeTab === 'tilesets' && (
+        <EditTilesetModal 
+          editingItem={editingItem}
+          editIndex={editIndex}
+          onCancel={() => setEditingItem(null)}
           onConfirm={saveEdit}
           onUpdateItem={setEditingItem}
         />

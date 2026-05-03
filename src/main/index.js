@@ -127,3 +127,14 @@ ipcMain.handle('save-data', async (event, { filePath, data }) => {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8')
     return true
 })
+
+ipcMain.handle('list-files', async (event, dirPath) => {
+    try {
+        if (!fs.existsSync(dirPath)) return []
+        const files = fs.readdirSync(dirPath)
+        return files.filter(file => fs.statSync(path.join(dirPath, file)).isFile())
+    } catch (e) {
+        console.error('[IPC] list-files error:', e)
+        return []
+    }
+})
