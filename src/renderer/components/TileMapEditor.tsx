@@ -127,44 +127,88 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                     margin: '20px auto'
                 }}>
                     {layers.map((layer: any, lIdx: number) => {
-                        if (layer.type !== 'tilelayer' || !visibleLayers[lIdx]) return null;
-                        const data = decodeLayerData(layer);
-                        
-                        return (
-                            <div key={lIdx} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', opacity: layer.opacity ?? 1 }}>
-                                {data.map((gid, tIdx) => {
-                                    if (gid === 0) return null;
-                                    const ts = getTilesetForGid(gid);
-                                    if (!ts || !tilesetPaths[ts.name]) return null;
+                        if (!visibleLayers[lIdx]) return null;
 
-                                    const localId = gid - ts.firstgid;
-                                    const columns = ts.columns || Math.floor(ts.imagewidth / ts.tilewidth);
-                                    const tx = (localId % columns) * ts.tilewidth;
-                                    const ty = Math.floor(localId / columns) * ts.tileheight;
-                                    
-                                    const x = (tIdx % layer.width) * tilewidth;
-                                    const y = Math.floor(tIdx / layer.width) * tileheight;
+                        if (layer.type === 'tilelayer') {
+                            const data = decodeLayerData(layer);
+                            return (
+                                <div key={lIdx} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', opacity: layer.opacity ?? 1 }}>
+                                    {data.map((gid, tIdx) => {
+                                        if (gid === 0) return null;
+                                        const ts = getTilesetForGid(gid);
+                                        if (!ts || !tilesetPaths[ts.name]) return null;
 
-                                    return (
-                                        <div 
-                                            key={tIdx}
-                                            style={{
-                                                position: 'absolute',
-                                                left: x,
-                                                top: y,
-                                                width: ts.tilewidth,
-                                                height: ts.tileheight,
-                                                backgroundImage: `url("${tilesetPaths[ts.name]}")`,
-                                                backgroundPosition: `-${tx}px -${ty}px`,
-                                                backgroundRepeat: 'no-repeat',
-                                                imageRendering: 'pixelated'
-                                            }}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        );
+                                        const localId = gid - ts.firstgid;
+                                        const columns = ts.columns || Math.floor(ts.imagewidth / ts.tilewidth);
+                                        const tx = (localId % columns) * ts.tilewidth;
+                                        const ty = Math.floor(localId / columns) * ts.tileheight;
+
+                                        const x = (tIdx % layer.width) * tilewidth;
+                                        const y = Math.floor(tIdx / layer.width) * tileheight;
+
+                                        return (
+                                            <div 
+                                                key={tIdx}
+                                                style={{
+                                                    position: 'absolute',
+                                                    left: x,
+                                                    top: y,
+                                                    width: ts.tilewidth,
+                                                    height: ts.tileheight,
+                                                    backgroundImage: `url("${tilesetPaths[ts.name]}")`,
+                                                    backgroundPosition: `-${tx}px -${ty}px`,
+                                                    backgroundRepeat: 'no-repeat',
+                                                    imageRendering: 'pixelated'
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            );
+                        } else if (layer.type === 'objectgroup') {
+                            return (
+                                <div key={lIdx} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', opacity: layer.opacity ?? 1 }}>
+                                    {(layer.objects || []).map((obj: any, oIdx: number) => {
+                                        if (!obj.gid || !obj.visible) return null;
+
+                                        const ts = getTilesetForGid(obj.gid);
+                                        if (!ts || !tilesetPaths[ts.name]) return null;
+
+                                        const localId = obj.gid - ts.firstgid;
+                                        const columns = ts.columns || Math.floor(ts.imagewidth / ts.tilewidth);
+                                        const tx = (localId % columns) * ts.tilewidth;
+                                        const ty = Math.floor(localId / columns) * ts.tileheight;
+
+                                        // For tile objects, y is the bottom-left coordinate
+                                        const x = obj.x;
+                                        const y = obj.y - obj.height;
+
+                                        return (
+                                            <div 
+                                                key={oIdx}
+                                                style={{
+                                                    position: 'absolute',
+                                                    left: x,
+                                                    top: y,
+                                                    width: obj.width,
+                                                    height: obj.height,
+                                                    backgroundImage: `url("${tilesetPaths[ts.name]}")`,
+                                                    backgroundPosition: `-${tx}px -${ty}px`,
+                                                    backgroundRepeat: 'no-repeat',
+                                                    imageRendering: 'pixelated',
+                                                    transform: `rotate(${obj.rotation || 0}deg)`,
+                                                    transformOrigin: 'bottom left'
+                                                }}
+                                                title={obj.name || obj.type}
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            );
+                        }
+                        return null;
                     })}
+
                 </div>
             </div>
 
