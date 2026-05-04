@@ -25,7 +25,16 @@ const EditTilesets: React.FC<EditTilesetsProps> = ({
       </div>
 
       <h2>Tilesets</h2>
-      <p style={{ color: '#888', marginBottom: '20px' }}>Manage the graphical assets (spritesheets) used in your project for world tiles, creatures, and items.</p>
+      <p style={{ color: '#888', marginBottom: '20px' }}>Tilesets are the core graphical assets of your project. They are spritesheets containing multiple frames for world tiles, creatures, and items.</p>
+      
+      <div style={{ backgroundColor: '#1e1e1e', padding: '15px', borderRadius: '5px', marginBottom: '20px', borderLeft: '4px solid #4ec9b0' }}>
+          <h4 style={{ marginTop: 0, color: '#4ec9b0' }}>How to use:</h4>
+          <ul style={{ color: '#ccc', fontSize: '0.9rem', paddingLeft: '20px' }}>
+              <li><strong>Add Tileset:</strong> Register a new PNG file as a tileset.</li>
+              <li><strong>Appearances:</strong> Once added, look at the sidebar under the Tilesets section. Each tileset has its own sub-item.</li>
+              <li><strong>Define Regions:</strong> Select a tileset in the sidebar to define specific regions of the spritesheet as Creature or Item appearances.</li>
+          </ul>
+      </div>
 
       <div className="entity-list">
         <table>

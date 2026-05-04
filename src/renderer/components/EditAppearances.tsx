@@ -5,8 +5,7 @@ import AppearanceCanvas from './AppearanceCanvas'
 import { useProject } from '../ProjectContext'
 
 interface EditAppearancesProps {
-  items: Tileset[];
-  selectedAppearanceIndex: number | null;
+  tilesetId: string | null;
   onAddItem: (listType: 'mobs' | 'items') => void;
   onSave: () => void;
   onEditItem: (item: any, index: number, listType: 'mobs' | 'items') => void;
@@ -14,8 +13,7 @@ interface EditAppearancesProps {
 }
 
 const EditAppearances: React.FC<EditAppearancesProps> = ({ 
-  items, 
-  selectedAppearanceIndex,
+  tilesetId, 
   onAddItem, 
   onSave, 
   onEditItem,
@@ -23,17 +21,21 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
 }) => {
   const { projectData } = useProject();
 
-  if (selectedAppearanceIndex === null) {
+  if (tilesetId === null) {
       return (
           <div className="main-area">
-              <h2>Appearances</h2>
-              <p style={{ color: '#888', marginBottom: '20px' }}>Appearances map specific regions of a Tileset to entity IDs, defining how Creatures and Items look in the game.</p>
-              <p style={{ color: '#858585' }}>Select a tileset in the explorer to edit.</p>
+              <h2>Tileset Editor</h2>
+              <p style={{ color: '#888', marginBottom: '20px' }}>Select a tileset in the explorer to edit its appearances (mobs and items).</p>
           </div>
       )
   }
 
-  const selectedAppearance = items[selectedAppearanceIndex] as Tileset;
+  const matchingAppearances = projectData?.data.appearances.filter(a => a.tileset === tilesetId) || [];
+  const selectedAppearance = {
+      tileset: tilesetId,
+      mobs: matchingAppearances.flatMap(a => a.mobs || []),
+      items: matchingAppearances.flatMap(a => a.items || [])
+  };
 
   return (
     <div className="main-area">
@@ -41,7 +43,7 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
         <button onClick={onSave}><Save size={16} /> Save Changes</button>
       </div>
 
-      <h2>Tileset: {selectedAppearance.tileset}</h2>
+      <h2>Tileset: {tilesetId}</h2>
       <p style={{ color: '#888', marginBottom: '20px' }}>Appearances map specific regions of a Tileset to entity IDs, defining how Creatures and Items look in the game.</p>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>

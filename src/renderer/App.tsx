@@ -27,7 +27,7 @@ import { ProjectData } from './types/GeneralEntityTypes'
 function App() {
   const { projectData, setProjectData } = useProject();
   const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart'>('quickstart')
-  const [selectedAppearanceIndex, setSelectedAppearanceIndex] = useState<number | null>(null)
+  const [selectedTilesetIndex, setSelectedTilesetIndex] = useState<number | null>(null)
 
   
   const [editingItem, setEditingItem] = useState<any | null>(null)
@@ -107,22 +107,28 @@ function App() {
       const newScenes = { ...newData.data.scenario.scenes };
       delete newScenes[targetId];
       newData.data.scenario = { ...newData.data.scenario, scenes: newScenes };
-    } else if (activeTab === 'appearances' && selectedAppearanceIndex !== null && subtype) {
-      const currentAppearances = [...newData.data.appearances];
-      const targetAppearance = { ...currentAppearances[selectedAppearanceIndex] };
+    } else if (activeTab === 'appearances' && selectedTilesetIndex !== null && subtype) {
+      const tilesetId = projectData.data.tilesets[selectedTilesetIndex].id;
       
+      const otherAppearances = newData.data.appearances.filter(a => a.tileset !== tilesetId);
+      const matchingAppearances = newData.data.appearances.filter(a => a.tileset === tilesetId);
+      const consolidated = {
+          tileset: tilesetId,
+          mobs: matchingAppearances.flatMap(a => a.mobs || []),
+          items: matchingAppearances.flatMap(a => a.items || [])
+      };
+
       if (subtype === 'mobs') {
-          const list = [...(targetAppearance.mobs || [])];
+          const list = [...consolidated.mobs];
           list.splice(index, 1);
-          targetAppearance.mobs = list;
+          consolidated.mobs = list;
       } else {
-          const list = [...(targetAppearance.items || [])];
+          const list = [...consolidated.items];
           list.splice(index, 1);
-          targetAppearance.items = list;
+          consolidated.items = list;
       }
       
-      currentAppearances[selectedAppearanceIndex] = targetAppearance;
-      newData.data.appearances = currentAppearances;
+      newData.data.appearances = [...otherAppearances, consolidated];
     }
     setProjectData(newData);
   }
@@ -185,24 +191,30 @@ function App() {
         }
         newScenes[editingItem.id] = editingItem.lines;
         newData.data.scenario = { ...newData.data.scenario, scenes: newScenes };
-    } else if (activeTab === 'appearances' && selectedAppearanceIndex !== null && editingSubtype) {
-        const currentAppearances = [...newData.data.appearances];
-        const targetAppearance = { ...currentAppearances[selectedAppearanceIndex] };
+    } else if (activeTab === 'appearances' && selectedTilesetIndex !== null && editingSubtype) {
+        const tilesetId = projectData.data.tilesets[selectedTilesetIndex].id;
+        
+        const otherAppearances = newData.data.appearances.filter(a => a.tileset !== tilesetId);
+        const matchingAppearances = newData.data.appearances.filter(a => a.tileset === tilesetId);
+        const consolidated = {
+            tileset: tilesetId,
+            mobs: matchingAppearances.flatMap(a => a.mobs || []),
+            items: matchingAppearances.flatMap(a => a.items || [])
+        };
         
         if (editingSubtype === 'mobs') {
-            const list = [...(targetAppearance.mobs || [])];
+            const list = [...consolidated.mobs];
             if (editIndex >= 0) list[editIndex] = editingItem;
             else list.push(editingItem);
-            targetAppearance.mobs = list;
+            consolidated.mobs = list;
         } else {
-            const list = [...(targetAppearance.items || [])];
+            const list = [...consolidated.items];
             if (editIndex >= 0) list[editIndex] = editingItem;
             else list.push(editingItem);
-            targetAppearance.items = list;
+            consolidated.items = list;
         }
         
-        currentAppearances[selectedAppearanceIndex] = targetAppearance;
-        newData.data.appearances = currentAppearances;
+        newData.data.appearances = [...otherAppearances, consolidated];
     }
     
     setProjectData(newData)
@@ -212,12 +224,12 @@ function App() {
 
   const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart') => {
       setActiveTab(tab);
-      if (tab !== 'appearances') setSelectedAppearanceIndex(null);
+      if (tab !== 'appearances') setSelectedTilesetIndex(null);
   }
 
-  const handleSelectAppearance = (index: number) => {
+  const handleSelectTileset = (index: number) => {
       setActiveTab('appearances');
-      setSelectedAppearanceIndex(index);
+      setSelectedTilesetIndex(index);
   }
 
   if (!projectData) {
@@ -228,10 +240,10 @@ function App() {
     <div className="app-container">
       <Sidebar 
         activeTab={activeTab} 
-        appearances={projectData.data.appearances}
-        selectedAppearanceIndex={selectedAppearanceIndex}
+        tilesets={projectData.data.tilesets}
+        selectedTilesetIndex={selectedTilesetIndex}
         onSelectTab={handleSelectTab} 
-        onSelectAppearance={handleSelectAppearance}
+        onSelectTileset={handleSelectTileset}
         onLoadProject={handleOpenProject}
       />
 
@@ -305,8 +317,7 @@ function App() {
           />
       ) : (
           <EditAppearances 
-            items={projectData.data.appearances}
-            selectedAppearanceIndex={selectedAppearanceIndex}
+            tilesetId={selectedTilesetIndex !== null ? projectData.data.tilesets[selectedTilesetIndex].id : null}
             onAddItem={handleAddItem}
             onSave={handleSave}
             onEditItem={handleEditItem}
@@ -364,22 +375,22 @@ function App() {
         />
       )}
 
-      {editingItem && activeTab === 'appearances' && editingSubtype === 'mobs' && selectedAppearanceIndex !== null && (
+      {editingItem && activeTab === 'appearances' && editingSubtype === 'mobs' && selectedTilesetIndex !== null && (
         <EditMobAppearanceModal 
           editingItem={editingItem}
           editIndex={editIndex}
-          tileset={projectData.data.appearances[selectedAppearanceIndex].tileset}
+          tileset={projectData.data.tilesets[selectedTilesetIndex].id}
           onCancel={() => { setEditingItem(null); setEditingSubtype(null); }}
           onConfirm={saveEdit}
           onUpdateItem={setEditingItem}
         />
       )}
 
-      {editingItem && activeTab === 'appearances' && editingSubtype === 'items' && selectedAppearanceIndex !== null && (
+      {editingItem && activeTab === 'appearances' && editingSubtype === 'items' && selectedTilesetIndex !== null && (
         <EditItemAppearanceModal 
           editingItem={editingItem}
           editIndex={editIndex}
-          tileset={projectData.data.appearances[selectedAppearanceIndex].tileset}
+          tileset={projectData.data.tilesets[selectedTilesetIndex].id}
           onCancel={() => { setEditingItem(null); setEditingSubtype(null); }}
           onConfirm={saveEdit}
           onUpdateItem={setEditingItem}

@@ -50,7 +50,7 @@ Appearances map specific regions of a **Tileset** to entity IDs.
 
 ---
 
-## 4. Creatures
+## 3. Creatures
 These are the templates for all living things in the world.
 - **ID & Name**: Unique identifier and display name.
 - **Appearance**: Links to a specific **Creature Appearance**.
@@ -62,7 +62,7 @@ These are the templates for all living things in the world.
 
 ---
 
-## 5. NPCs
+## 4. NPCs
 Unique instances of characters in the world. NPCs are built upon **Creature** templates but have specific behaviors.
 
 ### Basic Data
@@ -88,7 +88,7 @@ Logic that executes when certain conditions are met (e.g., `playerDistance`).
 
 ---
 
-## 6. Items
+## 5. Items
 Objects that can be placed in the world, picked up, or used.
 - **Subtypes**: Items can be configured as specific types like `lightSource`, `container`, or `linkedDoor`.
 - **Stats**: Damage, Range, and Weight.
@@ -96,17 +96,17 @@ Objects that can be placed in the world, picked up, or used.
 
 ---
 
-## 7. Interactables
+## 6. Interactables
 Fixed map objects that players can interact with but typically cannot pick up (e.g., signs, switches, static decorations with descriptions).
 
 ---
 
-## 8. Cutscenes
+## 7. Cutscenes
 Dialogue-based story sequences that can be triggered at game start or through NPC interactions. They consist of a series of text lines displayed sequentially.
 
 ---
 
-## 9. Scenario
+## 8. Scenario
 Defines the entry point of your game.
 - **Starting Minute**: The time of day when the game begins.
 - **Starting Position**: The [X, Y] coordinates and the specific **Scene** (Map) where the player appears.

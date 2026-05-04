@@ -63,34 +63,30 @@ const Quickstart: React.FC<QuickstartProps> = ({ onNavigate }) => {
         </SectionLink>
 
         <SectionLink icon={Layers} label="2. Tilesets" tab="tilesets">
-          Manage the graphical assets (spritesheets) used in your project. Browse PNG files from your <code>res/</code> directory.
+          Manage graphical assets (spritesheets) and define how they represent in-game entities. Register PNG files in <strong>Tilesets</strong>, then select them in the sidebar to map regions to <strong>Creature</strong> or <strong>Item</strong> appearance IDs.
         </SectionLink>
 
-        <SectionLink icon={Palette} label="3. Appearances" tab="appearances">
-          Map specific regions of a Tileset to entity IDs. Define how your <strong>Creatures</strong> and <strong>Items</strong> look.
-        </SectionLink>
-
-        <SectionLink icon={Users} label="4. Creatures" tab="mobTypes">
+        <SectionLink icon={Users} label="3. Creatures" tab="mobTypes">
           Templates for all living things. Define base stats (HP, Damage, Speed) and assign their <strong>Appearances</strong>.
         </SectionLink>
 
-        <SectionLink icon={Users} label="5. NPCs" tab="npcs">
+        <SectionLink icon={Users} label="4. NPCs" tab="npcs">
           Unique character instances with their own <strong>Conversations</strong>, <strong>Schedules</strong>, and <strong>Triggers</strong>.
         </SectionLink>
 
-        <SectionLink icon={Sword} label="6. Items" tab="items">
+        <SectionLink icon={Sword} label="5. Items" tab="items">
           Objects lying in the world. Configure stats, weight, and whether they can be thrown.
         </SectionLink>
 
-        <SectionLink icon={Box} label="7. Interactables" tab="objectTypes">
+        <SectionLink icon={Box} label="6. Interactables" tab="objectTypes">
           Fixed map objects players can interact with (signs, switches, decorations).
         </SectionLink>
 
-        <SectionLink icon={PlayCircle} label="8. Cutscenes" tab="cutscenes">
+        <SectionLink icon={PlayCircle} label="7. Cutscenes" tab="cutscenes">
           Dialogue-based story sequences triggered by events or NPC interactions.
         </SectionLink>
 
-        <SectionLink icon={FileText} label="9. Scenario" tab="scenario">
+        <SectionLink icon={FileText} label="8. Scenario" tab="scenario">
           The entry point of your game. Set the <strong>Starting Position</strong>, <strong>Time</strong>, and <strong>Initial Party</strong>.
         </SectionLink>
 

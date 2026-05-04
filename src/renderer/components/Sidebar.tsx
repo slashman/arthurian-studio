@@ -1,25 +1,24 @@
 import React, { useState } from 'react'
 import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box, FileText, Globe, Settings, FolderOpen, Layers, BookOpen } from 'lucide-react'
-import { Tileset } from '../types/AppearanceEntityTypes'
 
 interface SidebarProps {
   activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart';
-  appearances: Tileset[];
-  selectedAppearanceIndex: number | null;
+  tilesets: { id: string }[];
+  selectedTilesetIndex: number | null;
   onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart') => void;
-  onSelectAppearance: (index: number) => void;
+  onSelectTileset: (index: number) => void;
   onLoadProject: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
   activeTab, 
-  appearances, 
-  selectedAppearanceIndex, 
+  tilesets, 
+  selectedTilesetIndex, 
   onSelectTab, 
-  onSelectAppearance,
+  onSelectTileset,
   onLoadProject
 }) => {
-  const [appearancesExpanded, setAppearancesExpanded] = useState(true);
+  const [tilesetsExpanded, setTilesetsExpanded] = useState(true);
   const [worldExpanded, setWorldExpanded] = useState(true);
 
   return (
@@ -119,47 +118,39 @@ const Sidebar: React.FC<SidebarProps> = ({
             <FileText size={16} /> Cutscenes
           </div>
 
-          {/* Appearances Header */}
+          {/* Tilesets Header */}
           <div 
-            className={`sidebar-item ${activeTab === 'appearances' && selectedAppearanceIndex === null ? 'active' : ''}`}
+            className={`sidebar-item ${activeTab === 'tilesets' && selectedTilesetIndex === null ? 'active' : ''}`}
             onClick={() => {
-                onSelectTab('appearances');
-                setAppearancesExpanded(!appearancesExpanded);
+                onSelectTab('tilesets');
+                setTilesetsExpanded(!tilesetsExpanded);
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexGrow: 1 }}>
-                <Palette size={16} />
-                <span style={{ flexGrow: 1 }}>Appearances</span>
-                {appearancesExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                <Layers size={16} />
+                <span style={{ flexGrow: 1 }}>Tilesets</span>
+                {tilesetsExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             </div>
           </div>
 
-          {/* Expanded Appearances List */}
-          {appearancesExpanded && (
+          {/* Expanded Tilesets List */}
+          {tilesetsExpanded && (
             <div style={{ marginLeft: '10px' }}>
-                {appearances.map((app, idx) => (
+                {tilesets.map((ts, idx) => (
                     <div 
                         key={idx}
-                        className={`sidebar-item ${activeTab === 'appearances' && selectedAppearanceIndex === idx ? 'active' : ''}`}
+                        className={`sidebar-item ${activeTab === 'appearances' && selectedTilesetIndex === idx ? 'active' : ''}`}
                         style={{ fontSize: '0.85rem', padding: '4px 15px' }}
                         onClick={(e) => {
                             e.stopPropagation();
-                            onSelectAppearance(idx);
+                            onSelectTileset(idx);
                         }}
                     >
-                        <FileJson size={14} /> {app.tileset}
+                        <FileJson size={14} /> {ts.id}
                     </div>
                 ))}
             </div>
           )}
-
-          {/* Tilesets Header */}
-          <div 
-            className={`sidebar-item ${activeTab === 'tilesets' ? 'active' : ''}`}
-            onClick={() => onSelectTab('tilesets')}
-          >
-            <Layers size={16} /> Tilesets
-          </div>
       </div>
 
       <div style={{ borderTop: '1px solid #333', padding: '10px 0' }}>
