@@ -72,8 +72,8 @@ function App() {
     setEditingSubtype(subtype || null)
   }
 
-  const handleAddItem = (subtype?: 'mobs' | 'items') => {
-    setEditingItem({})
+  const handleAddItem = (subtype?: 'mobs' | 'items', initialData: any = {}) => {
+    setEditingItem(initialData)
     setEditIndex(-1)
     setEditingSubtype(subtype || null)
   }

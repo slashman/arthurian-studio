@@ -6,7 +6,7 @@ import { useProject } from '../ProjectContext'
 
 interface EditAppearancesProps {
   tilesetId: string | null;
-  onAddItem: (listType: 'mobs' | 'items') => void;
+  onAddItem: (listType: 'mobs' | 'items', initialData?: any) => void;
   onSave: () => void;
   onEditItem: (item: any, index: number, listType: 'mobs' | 'items') => void;
   onDeleteItem: (index: number, listType: 'mobs' | 'items') => void;
@@ -57,7 +57,7 @@ const EditAppearances: React.FC<EditAppearancesProps> = ({
       <ItemAppearancesTable 
         tilesetId={selectedAppearance.tileset}
         items={selectedAppearance.items}
-        onAddItem={() => onAddItem('items')}
+        onAddItem={(initialData) => onAddItem('items', initialData)}
         onEditItem={(item, idx) => onEditItem(item, idx, 'items')}
         onDeleteItem={(idx) => onDeleteItem(idx, 'items')}
       />
