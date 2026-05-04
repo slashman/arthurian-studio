@@ -20,14 +20,16 @@ import EditTilesets from './components/EditTilesets'
 import EditTilesetModal from './components/EditTilesetModal'
 import Quickstart from './components/Quickstart'
 import ProjectLoader from './components/ProjectLoader'
+import TileMapEditor from './components/TileMapEditor'
 import { useProject } from './ProjectContext'
 import { ProjectData } from './types/GeneralEntityTypes'
 
 
 function App() {
   const { projectData, setProjectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart'>('quickstart')
+  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor'>('quickstart')
   const [selectedTilesetIndex, setSelectedTilesetIndex] = useState<number | null>(null)
+  const [selectedMap, setSelectedMap] = useState<string | null>(null)
 
   
   const [editingItem, setEditingItem] = useState<any | null>(null)
@@ -76,6 +78,11 @@ function App() {
     setEditingItem(initialData)
     setEditIndex(-1)
     setEditingSubtype(subtype || null)
+  }
+
+  const handleOpenMapEditor = (filename: string) => {
+    setSelectedMap(filename);
+    setActiveTab('map-editor');
   }
 
   const handleDeleteItem = (index: number, subtype?: 'mobs' | 'items') => {
@@ -222,9 +229,10 @@ function App() {
     setEditingSubtype(null)
   }
 
-  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart') => {
+  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor') => {
       setActiveTab(tab);
       if (tab !== 'appearances') setSelectedTilesetIndex(null);
+      if (tab !== 'map-editor') setSelectedMap(null);
   }
 
   const handleSelectTileset = (index: number) => {
@@ -266,6 +274,7 @@ function App() {
             scenario={projectData.data.scenario}
             onSave={handleSave}
             onUpdateScenario={(updated) => setProjectData({ ...projectData, data: { ...projectData.data, scenario: updated } })}
+            onOpenMapEditor={handleOpenMapEditor}
           />
       ) : activeTab === 'cutscenes' ? (
           <EditCutscenes 
@@ -315,6 +324,8 @@ function App() {
             onEditItem={handleEditItem}
             onDeleteItem={handleDeleteItem}
           />
+      ) : activeTab === 'map-editor' ? (
+          <TileMapEditor filename={selectedMap || ''} />
       ) : (
           <EditAppearances 
             tilesetId={selectedTilesetIndex !== null ? projectData.data.tilesets[selectedTilesetIndex].id : null}

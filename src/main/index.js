@@ -38,6 +38,8 @@ app.whenReady().then(() => {
         if (process.platform === 'win32' && filePath.startsWith('/') && /^\/[a-zA-Z]:/.test(filePath)) {
             filePath = filePath.slice(1)
         }
+        
+        filePath = path.normalize(filePath)
 
         console.log('[Media Protocol] URL:', request.url)
         console.log('[Media Protocol] Path:', filePath)
@@ -126,6 +128,16 @@ ipcMain.handle('open-project', async () => {
 ipcMain.handle('save-data', async (event, { filePath, data }) => {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8')
     return true
+})
+
+ipcMain.handle('load-file', async (event, filePath) => {
+    try {
+        if (!fs.existsSync(filePath)) return null
+        return fs.readFileSync(filePath, 'utf8')
+    } catch (e) {
+        console.error('[IPC] load-file error:', e)
+        return null
+    }
 })
 
 ipcMain.handle('list-files', async (event, dirPath) => {

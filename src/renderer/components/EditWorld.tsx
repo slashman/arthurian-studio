@@ -7,12 +7,14 @@ interface EditWorldProps {
   scenario: Scenario;
   onSave: () => void;
   onUpdateScenario: (updated: Scenario) => void;
+  onOpenMapEditor: (filename: string) => void;
 }
 
 const EditWorld: React.FC<EditWorldProps> = ({ 
   scenario, 
   onSave, 
-  onUpdateScenario 
+  onUpdateScenario,
+  onOpenMapEditor
 }) => {
   const [editingPos, setEditingPos] = useState<{x: number, y: number} | null>(null);
 
@@ -123,6 +125,7 @@ const EditWorld: React.FC<EditWorldProps> = ({
           y={editingPos.y}
           onCancel={() => setEditingPos(null)}
           onConfirm={handleConfirmChunk}
+          onOpenEditor={onOpenMapEditor}
         />
       )}
     </div>

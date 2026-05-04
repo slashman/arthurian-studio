@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Save, X, Trash2 } from 'lucide-react'
+import { Save, X, Trash2, Map as MapIcon } from 'lucide-react'
 import { ScenarioMap } from '../types/ScenarioEntityTypes'
 
 interface EditMapChunkModalProps {
@@ -8,6 +8,7 @@ interface EditMapChunkModalProps {
   y: number;
   onCancel: () => void;
   onConfirm: (updated: ScenarioMap | null) => void;
+  onOpenEditor: (filename: string) => void;
 }
 
 const EditMapChunkModal: React.FC<EditMapChunkModalProps> = ({ 
@@ -15,7 +16,8 @@ const EditMapChunkModal: React.FC<EditMapChunkModalProps> = ({
   x, 
   y, 
   onCancel, 
-  onConfirm 
+  onConfirm,
+  onOpenEditor
 }) => {
   const [editingChunk, setEditingChunk] = useState<ScenarioMap>({
     name: '',
@@ -93,6 +95,11 @@ const EditMapChunkModal: React.FC<EditMapChunkModalProps> = ({
           {chunk && (
             <button className="delete-btn" onClick={handleDelete} style={{ marginRight: 'auto', backgroundColor: '#ff4444' }}>
               <Trash2 size={16} /> Delete
+            </button>
+          )}
+          {chunk && (
+            <button onClick={() => onOpenEditor(editingChunk.filename)} style={{ backgroundColor: '#007acc' }}>
+              <MapIcon size={16} /> Open in Map Editor
             </button>
           )}
           <button onClick={onCancel} style={{ backgroundColor: '#444' }}>Cancel</button>
