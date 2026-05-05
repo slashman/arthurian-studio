@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useProject } from '../ProjectContext'
 import MapLayerSidebar from './MapLayerSidebar'
 import MapView from './MapView'
+import TilesetPicker from './TilesetPicker'
 
 interface TileMapEditorProps {
   filename: string;
@@ -14,6 +15,8 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const [tilesetPaths, setTilesetPaths] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<Record<number, boolean>>({});
+  const [rightSidebarTab, setRightSidebarTab] = useState<'layers' | 'tilesets'>('tilesets');
+  const [activeTile, setActiveTile] = useState<{ tilesetName: string, tileId: number } | null>(null);
 
   useEffect(() => {
     const loadMap = async () => {
@@ -85,7 +88,7 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   if (error) return <div className="main-area" style={{ color: '#ff4444' }}>{error}</div>;
   if (!mapData) return null;
 
-  const { width, height, tilewidth, tileheight, layers } = mapData;
+  const { width, height, tilewidth, tileheight, layers, tilesets } = mapData;
 
   return (
     <div className="main-area" style={{ padding: 0, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -101,11 +104,55 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                 visibleLayers={visibleLayers}
             />
 
-            <MapLayerSidebar 
-                layers={layers}
-                visibleLayers={visibleLayers}
-                onToggleLayer={toggleLayer}
-            />
+            <div style={{ width: '300px', display: 'flex', flexDirection: 'column', borderLeft: '1px solid #333' }}>
+                <div style={{ display: 'flex', background: '#1e1e1e', borderBottom: '1px solid #333' }}>
+                    <div 
+                        onClick={() => setRightSidebarTab('tilesets')}
+                        style={{ 
+                            padding: '10px 15px', 
+                            cursor: 'pointer', 
+                            fontSize: '0.85rem',
+                            borderBottom: rightSidebarTab === 'tilesets' ? '2px solid #007acc' : '2px solid transparent',
+                            background: rightSidebarTab === 'tilesets' ? '#252526' : 'transparent',
+                            flexGrow: 1,
+                            textAlign: 'center'
+                        }}
+                    >
+                        Tilesets
+                    </div>
+                    <div 
+                        onClick={() => setRightSidebarTab('layers')}
+                        style={{ 
+                            padding: '10px 15px', 
+                            cursor: 'pointer', 
+                            fontSize: '0.85rem',
+                            borderBottom: rightSidebarTab === 'layers' ? '2px solid #007acc' : '2px solid transparent',
+                            background: rightSidebarTab === 'layers' ? '#252526' : 'transparent',
+                            flexGrow: 1,
+                            textAlign: 'center'
+                        }}
+                    >
+                        Layers
+                    </div>
+                </div>
+
+                <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    {rightSidebarTab === 'tilesets' ? (
+                        <TilesetPicker 
+                            tilesets={tilesets}
+                            tilesetPaths={tilesetPaths}
+                            activeTile={activeTile}
+                            onSelectTile={(tilesetName, tileId) => setActiveTile({ tilesetName, tileId })}
+                        />
+                    ) : (
+                        <MapLayerSidebar 
+                            layers={layers}
+                            visibleLayers={visibleLayers}
+                            onToggleLayer={toggleLayer}
+                        />
+                    )}
+                </div>
+            </div>
         </div>
     </div>
   )
