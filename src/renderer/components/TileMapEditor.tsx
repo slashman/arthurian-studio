@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Save } from 'lucide-react'
 import { useProject } from '../ProjectContext'
 import MapLayerSidebar from './MapLayerSidebar'
 import MapView from './MapView'
@@ -12,6 +13,7 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const { projectData } = useProject();
   const [mapData, setMapData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [tilesetPaths, setTilesetPaths] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<Record<number, boolean>>({});
@@ -19,17 +21,21 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const [rightSidebarTab, setRightSidebarTab] = useState<'layers' | 'tilesets'>('tilesets');
   const [activeTile, setActiveTile] = useState<{ tilesetName: string, tileId: number } | null>(null);
 
+  const getMapPath = () => {
+    if (!projectData || !filename) return null;
+    const lastSlash = Math.max(projectData.filePath.lastIndexOf('/'), projectData.filePath.lastIndexOf('\\'));
+    const projectDir = projectData.filePath.substring(0, lastSlash);
+    const mapsDir = projectDir + (projectDir.includes('/') ? '/maps' : '\\maps');
+    return mapsDir + (mapsDir.includes('/') ? '/' : '\\') + filename;
+  };
+
   useEffect(() => {
     const loadMap = async () => {
-      if (!projectData || !filename) return;
+      const mapPath = getMapPath();
+      if (!mapPath) return;
 
       setLoading(true);
       setError(null);
-
-      const lastSlash = Math.max(projectData.filePath.lastIndexOf('/'), projectData.filePath.lastIndexOf('\\'));
-      const projectDir = projectData.filePath.substring(0, lastSlash);
-      const mapsDir = projectDir + (projectDir.includes('/') ? '/maps' : '\\maps');
-      const mapPath = mapsDir + (mapsDir.includes('/') ? '/' : '\\') + filename;
 
       try {
         const content = await window.electron.loadFile(mapPath);
@@ -56,6 +62,10 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
         }
 
         // Resolve tileset paths
+        const lastSlash = Math.max(projectData!.filePath.lastIndexOf('/'), projectData!.filePath.lastIndexOf('\\'));
+        const projectDir = projectData!.filePath.substring(0, lastSlash);
+        const mapsDir = projectDir + (projectDir.includes('/') ? '/maps' : '\\maps');
+
         const paths: Record<string, string> = {};
         for (const ts of json.tilesets) {
             const imgPathRelative = ts.image;
@@ -86,6 +96,26 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
 
     loadMap();
   }, [filename, projectData]);
+
+  const handleSave = async () => {
+    const mapPath = getMapPath();
+    if (!mapPath || !mapData) return;
+
+    setSaving(true);
+    try {
+        const success = await window.electron.saveData(mapPath, mapData);
+        if (success) {
+            alert('Map saved successfully!');
+        } else {
+            alert('Failed to save map.');
+        }
+    } catch (e) {
+        console.error('Error saving map:', e);
+        alert(`Error saving map: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+        setSaving(false);
+    }
+  };
 
   const toggleLayer = (idx: number) => {
       setVisibleLayers(prev => ({ ...prev, [idx]: !prev[idx] }));
@@ -143,8 +173,19 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   return (
     <div className="main-area" style={{ padding: 0, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '10px 20px', background: '#252526', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
-            <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Map Editor: {filename}</h2>
-            <div style={{ fontSize: '0.8rem', color: '#888' }}>{width}x{height} tiles ({tilewidth}x{tileheight})</div>
+            <div>
+                <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Map Editor: {filename}</h2>
+                <div style={{ fontSize: '0.8rem', color: '#888' }}>{width}x{height} tiles ({tilewidth}x{tileheight})</div>
+            </div>
+            <button 
+                onClick={handleSave} 
+                disabled={saving}
+                className="button-primary"
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 15px' }}
+            >
+                <Save size={16} />
+                {saving ? 'Saving...' : 'Save Map'}
+            </button>
         </div>
         
         <div style={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
