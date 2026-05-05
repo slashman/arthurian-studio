@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface MapViewProps {
   mapData: any;
@@ -11,9 +11,34 @@ interface MapViewProps {
 const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers, activeLayerIdx, onCellClick }) => {
   const { width, height, tilewidth, tileheight, layers, tilesets } = mapData;
   const [hoverPos, setHoverPos] = useState<{ col: number, row: number } | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [images, setImages] = useState<Record<string, HTMLImageElement>>({});
+
+  // Load tileset images
+  useEffect(() => {
+    const loadedImages: Record<string, HTMLImageElement> = {};
+    let loadedCount = 0;
+    const tilesetNames = Object.keys(tilesetPaths);
+    
+    if (tilesetNames.length === 0) {
+        setImages({});
+        return;
+    }
+
+    tilesetNames.forEach(name => {
+      const img = new Image();
+      img.src = tilesetPaths[name];
+      img.onload = () => {
+        loadedImages[name] = img;
+        loadedCount++;
+        if (loadedCount === tilesetNames.length) {
+          setImages(loadedImages);
+        }
+      };
+    });
+  }, [tilesetPaths]);
 
   const getTilesetForGid = (gid: number) => {
-// ... (rest of getTilesetForGid)
     for (let i = tilesets.length - 1; i >= 0; i--) {
       if (gid >= tilesets[i].firstgid) {
         return tilesets[i];
@@ -23,7 +48,6 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
   };
 
   const decodeLayerData = (layer: any) => {
-// ... (rest of decodeLayerData)
     if (layer.encoding === 'base64') {
       const binaryString = window.atob(layer.data);
       const bytes = new Uint8Array(binaryString.length);
@@ -35,8 +59,76 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
     return layer.data;
   };
 
-  const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+  // Draw map
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = false;
+
+    layers.forEach((layer: any, lIdx: number) => {
+      if (!visibleLayers[lIdx]) return;
+
+      ctx.globalAlpha = layer.opacity ?? 1;
+
+      if (layer.type === 'tilelayer') {
+        const data = decodeLayerData(layer);
+        data.forEach((gid: number, tIdx: number) => {
+          if (gid === 0) return;
+          const ts = getTilesetForGid(gid);
+          if (!ts || !images[ts.name]) return;
+
+          const localId = gid - ts.firstgid;
+          const columns = ts.columns || Math.floor(ts.imagewidth / ts.tilewidth);
+          const tx = (localId % columns) * ts.tilewidth;
+          const ty = Math.floor(localId / columns) * ts.tileheight;
+
+          const x = (tIdx % layer.width) * tilewidth;
+          const y = Math.floor(tIdx / layer.width) * tileheight;
+
+          ctx.drawImage(
+            images[ts.name],
+            tx, ty, ts.tilewidth, ts.tileheight,
+            x, y, ts.tilewidth, ts.tileheight
+          );
+        });
+      } else if (layer.type === 'objectgroup') {
+        (layer.objects || []).forEach((obj: any) => {
+          if (!obj.gid || !obj.visible) return;
+
+          const ts = getTilesetForGid(obj.gid);
+          if (!ts || !images[ts.name]) return;
+
+          const localId = obj.gid - ts.firstgid;
+          const columns = ts.columns || Math.floor(ts.imagewidth / ts.tilewidth);
+          const tx = (localId % columns) * ts.tilewidth;
+          const ty = Math.floor(localId / columns) * ts.tileheight;
+
+          const x = obj.x;
+          const y = obj.y - obj.height;
+
+          ctx.save();
+          ctx.translate(x, y + obj.height);
+          ctx.rotate((obj.rotation || 0) * Math.PI / 180);
+          ctx.drawImage(
+            images[ts.name],
+            tx, ty, ts.tilewidth, ts.tileheight,
+            0, -obj.height, obj.width, obj.height
+          );
+          ctx.restore();
+        });
+      }
+    });
+
+    ctx.globalAlpha = 1;
+  }, [mapData, visibleLayers, images]);
+
+  const handleMapClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
@@ -49,8 +141,9 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
@@ -70,104 +163,28 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
 
   return (
     <div style={{ flexGrow: 1, background: '#000', overflow: 'auto', position: 'relative' }}>
-      <div 
-        onClick={handleMapClick}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{ 
-            position: 'relative', 
-            width: width * tilewidth, 
-            height: height * tileheight,
-            background: '#111',
-            margin: '20px auto',
-            cursor: 'crosshair'
-        }}
-      >
-        {layers.map((layer: any, lIdx: number) => {
-// ... (rest of layers.map)
-          if (!visibleLayers[lIdx]) return null;
+      <div style={{ 
+        position: 'relative', 
+        width: width * tilewidth, 
+        height: height * tileheight,
+        background: '#111',
+        margin: '20px auto',
+        cursor: 'crosshair'
+      }}>
+        <canvas
+          ref={canvasRef}
+          width={width * tilewidth}
+          height={height * tileheight}
+          onClick={handleMapClick}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{ 
+            display: 'block',
+            imageRendering: 'pixelated'
+          }}
+        />
 
-          if (layer.type === 'tilelayer') {
-            const data = decodeLayerData(layer);
-            return (
-              <div key={lIdx} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', opacity: layer.opacity ?? 1 }}>
-                {data.map((gid: number, tIdx: number) => {
-                  if (gid === 0) return null;
-                  const ts = getTilesetForGid(gid);
-                  if (!ts || !tilesetPaths[ts.name]) return null;
-
-                  const localId = gid - ts.firstgid;
-                  const columns = ts.columns || Math.floor(ts.imagewidth / ts.tilewidth);
-                  const tx = (localId % columns) * ts.tilewidth;
-                  const ty = Math.floor(localId / columns) * ts.tileheight;
-
-                  const x = (tIdx % layer.width) * tilewidth;
-                  const y = Math.floor(tIdx / layer.width) * tileheight;
-
-                  return (
-                    <div 
-                      key={tIdx}
-                      style={{
-                        position: 'absolute',
-                        left: x,
-                        top: y,
-                        width: ts.tilewidth,
-                        height: ts.tileheight,
-                        backgroundImage: `url("${tilesetPaths[ts.name]}")`,
-                        backgroundPosition: `-${tx}px -${ty}px`,
-                        backgroundRepeat: 'no-repeat',
-                        imageRendering: 'pixelated'
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            );
-          } else if (layer.type === 'objectgroup') {
-            return (
-              <div key={lIdx} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', opacity: layer.opacity ?? 1 }}>
-                {(layer.objects || []).map((obj: any, oIdx: number) => {
-                  if (!obj.gid || !obj.visible) return null;
-
-                  const ts = getTilesetForGid(obj.gid);
-                  if (!ts || !tilesetPaths[ts.name]) return null;
-
-                  const localId = obj.gid - ts.firstgid;
-                  const columns = ts.columns || Math.floor(ts.imagewidth / ts.tilewidth);
-                  const tx = (localId % columns) * ts.tilewidth;
-                  const ty = Math.floor(localId / columns) * ts.tileheight;
-
-                  // For tile objects, y is the bottom-left coordinate
-                  const x = obj.x;
-                  const y = obj.y - obj.height;
-
-                  return (
-                    <div 
-                      key={oIdx}
-                      style={{
-                        position: 'absolute',
-                        left: x,
-                        top: y,
-                        width: obj.width,
-                        height: obj.height,
-                        backgroundImage: `url("${tilesetPaths[ts.name]}")`,
-                        backgroundPosition: `-${tx}px -${ty}px`,
-                        backgroundRepeat: 'no-repeat',
-                        imageRendering: 'pixelated',
-                        transform: `rotate(${obj.rotation || 0}deg)`,
-                        transformOrigin: 'bottom left'
-                      }}
-                      title={obj.name || obj.type}
-                    />
-                  );
-                })}
-              </div>
-            );
-          }
-          return null;
-        })}
-
-        {/* Hover Highlight */}
+        {/* Hover Highlight - keeping as DOM for simpler interaction feedback */}
         {hoverPos && (
             <div style={{
                 position: 'absolute',
