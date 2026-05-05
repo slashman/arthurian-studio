@@ -140,6 +140,53 @@ ipcMain.handle('load-file', async (event, filePath) => {
     }
 })
 
+ipcMain.handle('run-project', async (event, projectDir) => {
+    try {
+        const tmpDir = path.join(app.getAppPath(), 'tmp')
+        const runtimeSrc = path.join(app.getAppPath(), 'oax6-runtime')
+        
+        // Ensure tmp is fresh
+        if (fs.existsSync(tmpDir)) {
+            fs.rmSync(tmpDir, { recursive: true, force: true })
+        }
+        fs.mkdirSync(tmpDir, { recursive: true })
+
+        // 1. Copy runtime to tmp
+        if (fs.existsSync(runtimeSrc)) {
+            fs.cpSync(runtimeSrc, tmpDir, { recursive: true })
+        }
+
+        // 2. Copy data/* into tmp/scenario
+        const dataSrc = path.join(projectDir, 'data')
+        const dataDest = path.join(tmpDir, 'scenario')
+        if (fs.existsSync(dataSrc)) {
+            fs.mkdirSync(dataDest, { recursive: true })
+            fs.cpSync(dataSrc, dataDest, { recursive: true })
+        }
+
+        // 3. Copy maps/* into tmp/scenario/maps
+        const mapsSrc = path.join(projectDir, 'maps')
+        const mapsDest = path.join(tmpDir, 'scenario', 'maps')
+        if (fs.existsSync(mapsSrc)) {
+            fs.mkdirSync(mapsDest, { recursive: true })
+            fs.cpSync(mapsSrc, mapsDest, { recursive: true })
+        }
+
+        // 4. Copy res/* into tmp/assets
+        const resSrc = path.join(projectDir, 'res')
+        const resDest = path.join(tmpDir, 'assets')
+        if (fs.existsSync(resSrc)) {
+            fs.mkdirSync(resDest, { recursive: true })
+            fs.cpSync(resSrc, resDest, { recursive: true })
+        }
+
+        return true
+    } catch (e) {
+        console.error('[IPC] run-project error:', e)
+        throw e
+    }
+})
+
 ipcMain.handle('list-files', async (event, dirPath) => {
     try {
         if (!fs.existsSync(dirPath)) return []

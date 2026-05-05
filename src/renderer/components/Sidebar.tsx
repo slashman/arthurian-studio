@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box, FileText, Globe, Settings, FolderOpen, Layers, BookOpen } from 'lucide-react'
+import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box, FileText, Globe, Settings, FolderOpen, Layers, BookOpen, Play } from 'lucide-react'
 
 interface SidebarProps {
   activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor';
@@ -8,6 +8,7 @@ interface SidebarProps {
   onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor') => void;
   onSelectTileset: (index: number) => void;
   onLoadProject: () => void;
+  onRunProject: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -16,7 +17,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   selectedTilesetIndex, 
   onSelectTab, 
   onSelectTileset,
-  onLoadProject
+  onLoadProject,
+  onRunProject
 }) => {
   const [tilesetsExpanded, setTilesetsExpanded] = useState(true);
   const [worldExpanded, setWorldExpanded] = useState(true);
@@ -154,6 +156,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       <div style={{ borderTop: '1px solid #333', padding: '10px 0' }}>
+          <div 
+            className="sidebar-item"
+            onClick={onRunProject}
+            style={{ color: '#4ec9b0' }}
+          >
+            <Play size={16} /> Run Project
+          </div>
           <div 
             className="sidebar-item"
             onClick={onLoadProject}
