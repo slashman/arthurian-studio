@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface MapViewProps {
   mapData: any;
@@ -10,8 +10,10 @@ interface MapViewProps {
 
 const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers, activeLayerIdx, onCellClick }) => {
   const { width, height, tilewidth, tileheight, layers, tilesets } = mapData;
+  const [hoverPos, setHoverPos] = useState<{ col: number, row: number } | null>(null);
 
   const getTilesetForGid = (gid: number) => {
+// ... (rest of getTilesetForGid)
     for (let i = tilesets.length - 1; i >= 0; i--) {
       if (gid >= tilesets[i].firstgid) {
         return tilesets[i];
@@ -21,6 +23,7 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
   };
 
   const decodeLayerData = (layer: any) => {
+// ... (rest of decodeLayerData)
     if (layer.encoding === 'base64') {
       const binaryString = window.atob(layer.data);
       const bytes = new Uint8Array(binaryString.length);
@@ -46,10 +49,31 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
     }
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const col = Math.floor(x / tilewidth);
+    const row = Math.floor(y / tileheight);
+    
+    if (col >= 0 && col < width && row >= 0 && row < height) {
+        setHoverPos({ col, row });
+    } else {
+        setHoverPos(null);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoverPos(null);
+  };
+
   return (
     <div style={{ flexGrow: 1, background: '#000', overflow: 'auto', position: 'relative' }}>
       <div 
         onClick={handleMapClick}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         style={{ 
             position: 'relative', 
             width: width * tilewidth, 
@@ -60,6 +84,7 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
         }}
       >
         {layers.map((layer: any, lIdx: number) => {
+// ... (rest of layers.map)
           if (!visibleLayers[lIdx]) return null;
 
           if (layer.type === 'tilelayer') {
@@ -141,6 +166,22 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
           }
           return null;
         })}
+
+        {/* Hover Highlight */}
+        {hoverPos && (
+            <div style={{
+                position: 'absolute',
+                left: hoverPos.col * tilewidth,
+                top: hoverPos.row * tileheight,
+                width: tilewidth,
+                height: tileheight,
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                border: '1px solid #fff',
+                pointerEvents: 'none',
+                zIndex: 100,
+                boxSizing: 'border-box'
+            }} />
+        )}
       </div>
     </div>
   );
