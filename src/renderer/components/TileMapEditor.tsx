@@ -15,6 +15,7 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const [tilesetPaths, setTilesetPaths] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [visibleLayers, setVisibleLayers] = useState<Record<number, boolean>>({});
+  const [activeLayerIdx, setActiveLayerIdx] = useState<number>(0);
   const [rightSidebarTab, setRightSidebarTab] = useState<'layers' | 'tilesets'>('tilesets');
   const [activeTile, setActiveTile] = useState<{ tilesetName: string, tileId: number } | null>(null);
 
@@ -47,6 +48,12 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
             visibility[idx] = l.visible !== false;
         });
         setVisibleLayers(visibility);
+
+        // Default active layer to the first tilelayer found
+        const firstTileLayerIdx = json.layers.findIndex((l: any) => l.type === 'tilelayer');
+        if (firstTileLayerIdx !== -1) {
+            setActiveLayerIdx(firstTileLayerIdx);
+        }
 
         // Resolve tileset paths
         const paths: Record<string, string> = {};
@@ -84,6 +91,49 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
       setVisibleLayers(prev => ({ ...prev, [idx]: !prev[idx] }));
   };
 
+  const handleCellClick = (lIdx: number, tIdx: number) => {
+    if (!activeTile || !mapData) return;
+    if (lIdx !== activeLayerIdx) return;
+    
+    const layer = mapData.layers[lIdx];
+    if (layer.type !== 'tilelayer') return;
+
+    const tileset = mapData.tilesets.find((ts: any) => ts.name === activeTile.tilesetName);
+    if (!tileset) return;
+
+    const newGid = tileset.firstgid + activeTile.tileId;
+
+    setMapData((prev: any) => {
+        const newLayers = [...prev.layers];
+        const newLayer = { ...newLayers[lIdx] };
+        
+        let data = newLayer.data;
+        if (newLayer.encoding === 'base64') {
+            const binaryString = window.atob(newLayer.data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const uint32Data = new Uint32Array(bytes.buffer);
+            uint32Data[tIdx] = newGid;
+            
+            const updatedBytes = new Uint8Array(uint32Data.buffer);
+            let updatedBinary = '';
+            for (let i = 0; i < updatedBytes.length; i++) {
+                updatedBinary += String.fromCharCode(updatedBytes[i]);
+            }
+            newLayer.data = window.btoa(updatedBinary);
+        } else {
+            const newData = [...data];
+            newData[tIdx] = newGid;
+            newLayer.data = newData;
+        }
+        
+        newLayers[lIdx] = newLayer;
+        return { ...prev, layers: newLayers };
+    });
+  };
+
   if (loading) return <div className="main-area">Loading map {filename}...</div>;
   if (error) return <div className="main-area" style={{ color: '#ff4444' }}>{error}</div>;
   if (!mapData) return null;
@@ -102,6 +152,8 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                 mapData={mapData}
                 tilesetPaths={tilesetPaths}
                 visibleLayers={visibleLayers}
+                activeLayerIdx={activeLayerIdx}
+                onCellClick={handleCellClick}
             />
 
             <div style={{ width: '300px', display: 'flex', flexDirection: 'column', borderLeft: '1px solid #333' }}>
@@ -148,7 +200,9 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                         <MapLayerSidebar 
                             layers={layers}
                             visibleLayers={visibleLayers}
+                            activeLayerIdx={activeLayerIdx}
                             onToggleLayer={toggleLayer}
+                            onSelectLayer={setActiveLayerIdx}
                         />
                     )}
                 </div>

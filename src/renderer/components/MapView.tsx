@@ -4,9 +4,11 @@ interface MapViewProps {
   mapData: any;
   tilesetPaths: Record<string, string>;
   visibleLayers: Record<number, boolean>;
+  activeLayerIdx: number;
+  onCellClick: (lIdx: number, tIdx: number) => void;
 }
 
-const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers }) => {
+const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers, activeLayerIdx, onCellClick }) => {
   const { width, height, tilewidth, tileheight, layers, tilesets } = mapData;
 
   const getTilesetForGid = (gid: number) => {
@@ -30,15 +32,33 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers 
     return layer.data;
   };
 
+  const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const col = Math.floor(x / tilewidth);
+    const row = Math.floor(y / tileheight);
+    
+    if (col >= 0 && col < width && row >= 0 && row < height) {
+        const tIdx = row * width + col;
+        onCellClick(activeLayerIdx, tIdx);
+    }
+  };
+
   return (
     <div style={{ flexGrow: 1, background: '#000', overflow: 'auto', position: 'relative' }}>
-      <div style={{ 
-        position: 'relative', 
-        width: width * tilewidth, 
-        height: height * tileheight,
-        background: '#111',
-        margin: '20px auto'
-      }}>
+      <div 
+        onClick={handleMapClick}
+        style={{ 
+            position: 'relative', 
+            width: width * tilewidth, 
+            height: height * tileheight,
+            background: '#111',
+            margin: '20px auto',
+            cursor: 'crosshair'
+        }}
+      >
         {layers.map((layer: any, lIdx: number) => {
           if (!visibleLayers[lIdx]) return null;
 
