@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useProject } from '../ProjectContext'
 import MapLayerSidebar from './MapLayerSidebar'
+import MapView from './MapView'
 
 interface TileMapEditorProps {
   filename: string;
@@ -84,30 +85,7 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   if (error) return <div className="main-area" style={{ color: '#ff4444' }}>{error}</div>;
   if (!mapData) return null;
 
-  // Flatten tile data for easier rendering in a single loop if needed, 
-  // but let's keep layers separate for CSS stacking.
-  const { width, height, tilewidth, tileheight, layers, tilesets } = mapData;
-
-  const getTilesetForGid = (gid: number) => {
-      for (let i = tilesets.length - 1; i >= 0; i--) {
-          if (gid >= tilesets[i].firstgid) {
-              return tilesets[i];
-          }
-      }
-      return null;
-  };
-
-  const decodeLayerData = (layer: any) => {
-      if (layer.encoding === 'base64') {
-          const binaryString = window.atob(layer.data);
-          const bytes = new Uint8Array(binaryString.length);
-          for (let i = 0; i < binaryString.length; i++) {
-              bytes[i] = binaryString.charCodeAt(i);
-          }
-          return Array.from(new Uint32Array(bytes.buffer));
-      }
-      return layer.data;
-  };
+  const { width, height, tilewidth, tileheight, layers } = mapData;
 
   return (
     <div className="main-area" style={{ padding: 0, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -117,100 +95,11 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
         </div>
         
         <div style={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
-            {/* Map View */}
-            <div style={{ flexGrow: 1, background: '#000', overflow: 'auto', position: 'relative' }}>
-                <div style={{ 
-                    position: 'relative', 
-                    width: width * tilewidth, 
-                    height: height * tileheight,
-                    background: '#111',
-                    margin: '20px auto'
-                }}>
-                    {layers.map((layer: any, lIdx: number) => {
-                        if (!visibleLayers[lIdx]) return null;
-
-                        if (layer.type === 'tilelayer') {
-                            const data = decodeLayerData(layer);
-                            return (
-                                <div key={lIdx} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', opacity: layer.opacity ?? 1 }}>
-                                    {data.map((gid, tIdx) => {
-                                        if (gid === 0) return null;
-                                        const ts = getTilesetForGid(gid);
-                                        if (!ts || !tilesetPaths[ts.name]) return null;
-
-                                        const localId = gid - ts.firstgid;
-                                        const columns = ts.columns || Math.floor(ts.imagewidth / ts.tilewidth);
-                                        const tx = (localId % columns) * ts.tilewidth;
-                                        const ty = Math.floor(localId / columns) * ts.tileheight;
-
-                                        const x = (tIdx % layer.width) * tilewidth;
-                                        const y = Math.floor(tIdx / layer.width) * tileheight;
-
-                                        return (
-                                            <div 
-                                                key={tIdx}
-                                                style={{
-                                                    position: 'absolute',
-                                                    left: x,
-                                                    top: y,
-                                                    width: ts.tilewidth,
-                                                    height: ts.tileheight,
-                                                    backgroundImage: `url("${tilesetPaths[ts.name]}")`,
-                                                    backgroundPosition: `-${tx}px -${ty}px`,
-                                                    backgroundRepeat: 'no-repeat',
-                                                    imageRendering: 'pixelated'
-                                                }}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            );
-                        } else if (layer.type === 'objectgroup') {
-                            return (
-                                <div key={lIdx} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', opacity: layer.opacity ?? 1 }}>
-                                    {(layer.objects || []).map((obj: any, oIdx: number) => {
-                                        if (!obj.gid || !obj.visible) return null;
-
-                                        const ts = getTilesetForGid(obj.gid);
-                                        if (!ts || !tilesetPaths[ts.name]) return null;
-
-                                        const localId = obj.gid - ts.firstgid;
-                                        const columns = ts.columns || Math.floor(ts.imagewidth / ts.tilewidth);
-                                        const tx = (localId % columns) * ts.tilewidth;
-                                        const ty = Math.floor(localId / columns) * ts.tileheight;
-
-                                        // For tile objects, y is the bottom-left coordinate
-                                        const x = obj.x;
-                                        const y = obj.y - obj.height;
-
-                                        return (
-                                            <div 
-                                                key={oIdx}
-                                                style={{
-                                                    position: 'absolute',
-                                                    left: x,
-                                                    top: y,
-                                                    width: obj.width,
-                                                    height: obj.height,
-                                                    backgroundImage: `url("${tilesetPaths[ts.name]}")`,
-                                                    backgroundPosition: `-${tx}px -${ty}px`,
-                                                    backgroundRepeat: 'no-repeat',
-                                                    imageRendering: 'pixelated',
-                                                    transform: `rotate(${obj.rotation || 0}deg)`,
-                                                    transformOrigin: 'bottom left'
-                                                }}
-                                                title={obj.name || obj.type}
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            );
-                        }
-                        return null;
-                    })}
-
-                </div>
-            </div>
+            <MapView 
+                mapData={mapData}
+                tilesetPaths={tilesetPaths}
+                visibleLayers={visibleLayers}
+            />
 
             <MapLayerSidebar 
                 layers={layers}
