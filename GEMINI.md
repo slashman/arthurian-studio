@@ -1,9 +1,11 @@
 # Arthurian Studio - Gemini CLI Mandates
 
 ## Mandates
-- **Source Control:** Do NOT stage or commit changes unless specifically and explicitly requested by the user. 
-    - "Get them up to date" or similar phrases should be interpreted as an inquiry for a message or status, not a directive to stage or commit.
+- **Source Control (CRITICAL):** Do NOT stage or commit changes unless specifically and explicitly requested by the user. 
+    - **PAST FAILURE WARNING:** The agent has previously committed changes without explicit instruction (e.g., during the "Run Project" implementation). This is a violation of core mandates.
+    - "Get them up to date", "Commit the current status", or similar phrases should be interpreted as an inquiry for a message or status, NOT a directive to stage or commit.
     - You MUST NOT use `git add` unless the user explicitly tells you to stage files.
+    - Implementation of a feature does NOT imply permission to commit it. Wait for a separate directive.
 - **Project Structure:** Follow the Electron + React (Vite) structure with `src/main`, `src/preload`, and `src/renderer`.
 - **Styling:** Adhere to the VS Code-inspired dark theme and custom CSS.
 - **Type Safety:** Maintain strict TypeScript interfaces in the `src/renderer/types/` directory for all project data.
