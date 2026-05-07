@@ -1,0 +1,10 @@
+{
+    "templates": [
+        {
+            "name": "OAX6 - Standard",
+            "directory": "oax6-standard",
+            "code": "oax6-std",
+            "version": "1.0.0"
+        }
+    ]
+}
