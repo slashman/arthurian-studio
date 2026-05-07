@@ -1,12 +1,15 @@
-const { app, BrowserWindow, ipcMain, dialog, protocol, net } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog, protocol, net: electronNet } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const { pathToFileURL } = require('url')
+const { getFreePort, startStaticServer, stopStaticServer } = require('./staticServer')
 
 // Register protocol before app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: 'media', privileges: { bypassCSP: true, standard: true, secure: true, supportFetchAPI: true } }
 ])
+
+let runWindow = null
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -50,7 +53,7 @@ app.whenReady().then(() => {
         }
         
         const fileUrl = pathToFileURL(filePath).toString()
-        return net.fetch(fileUrl)
+        return electronNet.fetch(fileUrl)
     } catch (e) {
         console.error('[Media Protocol] Error:', e)
         return new Response('Internal Error', { status: 500 })
@@ -178,6 +181,30 @@ ipcMain.handle('run-project', async (event, projectDir) => {
         if (fs.existsSync(resSrc)) {
             fs.mkdirSync(resDest, { recursive: true })
             fs.cpSync(resSrc, resDest, { recursive: true })
+        }
+
+        // Start server on a free port
+        const port = await getFreePort()
+        await startStaticServer(tmpDir, port)
+
+        if (runWindow) {
+          runWindow.loadURL(`http://localhost:${port}`)
+          runWindow.focus()
+        } else {
+          runWindow = new BrowserWindow({
+            width: 1024,
+            height: 768,
+            title: 'Arthurian - Running Project',
+            webPreferences: {
+              nodeIntegration: false,
+              contextIsolation: true
+            }
+          })
+          runWindow.loadURL(`http://localhost:${port}`)
+          runWindow.on('closed', () => {
+            runWindow = null
+            stopStaticServer()
+          })
         }
 
         return true

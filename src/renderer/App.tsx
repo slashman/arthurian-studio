@@ -51,7 +51,6 @@ function App() {
 
     try {
         await window.electron.runProject(projectDir);
-        alert('Project build ready in tmp directory!');
     } catch (e) {
         console.error('Run project error:', e);
         alert(`Failed to run project: ${e instanceof Error ? e.message : String(e)}`);
