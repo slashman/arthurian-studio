@@ -9,6 +9,7 @@ export interface ArthurianProject {
   projectName?: string;
   templateCode?: string;
   templateVersion?: string;
+  runtimeCode?: string;
   studioVersion: string;
   arthurianVersion: string;
   appearancesFile: string;

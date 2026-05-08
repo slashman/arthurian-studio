@@ -75,7 +75,7 @@ function App() {
     const projectDir = filePath.substring(0, lastSlash);
 
     try {
-        await window.electron.runProject(projectDir);
+        await window.electron.runProject(projectDir, projectData.project.runtimeCode);
     } catch (e) {
         console.error('Run project error:', e);
         alert(`Failed to run project: ${e instanceof Error ? e.message : String(e)}`);

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProject } from '../ProjectContext';
-import { Info, Folder, FileCode, Tag } from 'lucide-react';
+import { Info, Folder, FileCode, Tag, Play } from 'lucide-react';
 
 interface EditProjectInfoProps {
   onSave: () => void;
@@ -8,6 +8,15 @@ interface EditProjectInfoProps {
 
 const EditProjectInfo: React.FC<EditProjectInfoProps> = ({ onSave }) => {
   const { projectData, setProjectData } = useProject();
+  const [runtimes, setRuntimes] = useState<{name: string, directory: string, code: string}[]>([]);
+
+  useEffect(() => {
+    const fetchRuntimes = async () => {
+      const data = await window.electron.getRuntimes();
+      setRuntimes(data.runtimes);
+    };
+    fetchRuntimes();
+  }, []);
 
   if (!projectData) return null;
 
@@ -47,6 +56,21 @@ const EditProjectInfo: React.FC<EditProjectInfoProps> = ({ onSave }) => {
               onChange={(e) => updateField('projectName', e.target.value)}
               placeholder="Enter project name..."
             />
+          </div>
+          <div className="form-group" style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+               <Play size={14} /> Runtime
+            </label>
+            <select 
+              value={project.runtimeCode || ''} 
+              onChange={(e) => updateField('runtimeCode', e.target.value)}
+              style={{ width: '100%', padding: '8px', backgroundColor: '#3c3c3c', border: '1px solid #454545', color: 'white', borderRadius: '4px' }}
+            >
+              <option value="">Select a runtime...</option>
+              {runtimes.map(r => (
+                <option key={r.code} value={r.code}>{r.name}</option>
+              ))}
+            </select>
           </div>
           <div className="form-group">
             <label>Project Path</label>

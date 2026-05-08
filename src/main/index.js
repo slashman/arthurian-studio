@@ -89,7 +89,18 @@ ipcMain.handle('get-templates', async () => {
     }
 })
 
-ipcMain.handle('create-project', async (event, { name, templateDir }) => {
+ipcMain.handle('get-runtimes', async () => {
+    try {
+        const runtimesPath = path.join(app.getAppPath(), 'runtimes', 'runtimes.json')
+        if (!fs.existsSync(runtimesPath)) return { runtimes: [] }
+        return JSON.parse(fs.readFileSync(runtimesPath, 'utf8'))
+    } catch (e) {
+        console.error('[IPC] get-runtimes error:', e)
+        return { runtimes: [] }
+    }
+})
+
+ipcMain.handle('create-project', async (event, { name, templateDir, runtimeCode }) => {
     try {
         const { canceled, filePaths } = await dialog.showOpenDialog({
             properties: ['openDirectory', 'createDirectory'],
@@ -103,6 +114,10 @@ ipcMain.handle('create-project', async (event, { name, templateDir }) => {
         const templatesData = JSON.parse(fs.readFileSync(templatesJsonPath, 'utf8'))
         const template = templatesData.templates.find(t => t.directory === templateDir)
         
+        const runtimesJsonPath = path.join(app.getAppPath(), 'runtimes', 'runtimes.json')
+        const runtimesData = JSON.parse(fs.readFileSync(runtimesJsonPath, 'utf8'))
+        const runtime = runtimesData.runtimes.find(r => r.code === runtimeCode)
+
         const templatePath = path.join(app.getAppPath(), 'templates', templateDir)
         if (!fs.existsSync(templatePath)) throw new Error(`Template not found: ${templateDir}`)
 
@@ -119,6 +134,9 @@ ipcMain.handle('create-project', async (event, { name, templateDir }) => {
             if (template) {
                 projectData.templateCode = template.code
                 projectData.templateVersion = template.version
+            }
+            if (runtime) {
+                projectData.runtimeCode = runtime.code
             }
             fs.writeFileSync(oldProjPath, JSON.stringify(projectData, null, 2), 'utf8')
             fs.renameSync(oldProjPath, newProjPath)
@@ -202,10 +220,15 @@ ipcMain.handle('load-file', async (event, filePath) => {
     }
 })
 
-ipcMain.handle('run-project', async (event, projectDir) => {
+ipcMain.handle('run-project', async (event, projectDir, runtimeCode) => {
     try {
+        const runtimesJsonPath = path.join(app.getAppPath(), 'runtimes', 'runtimes.json')
+        const runtimesData = JSON.parse(fs.readFileSync(runtimesJsonPath, 'utf8'))
+        const runtime = runtimesData.runtimes.find(r => r.code === runtimeCode)
+        const runtimeDir = runtime ? runtime.directory : 'oax6-nightly'
+
         const tmpDir = path.join(app.getAppPath(), 'tmp')
-        const runtimeSrc = path.join(app.getAppPath(), 'oax6-runtime')
+        const runtimeSrc = path.join(app.getAppPath(), 'runtimes', runtimeDir)
         
         // Ensure tmp is fresh
         if (fs.existsSync(tmpDir)) {
@@ -216,6 +239,12 @@ ipcMain.handle('run-project', async (event, projectDir) => {
         // 1. Copy runtime to tmp
         if (fs.existsSync(runtimeSrc)) {
             fs.cpSync(runtimeSrc, tmpDir, { recursive: true })
+        } else {
+            console.warn(`[IPC] Runtime not found at ${runtimeSrc}, falling back to default oax6-nightly`)
+            const defaultRuntimeSrc = path.join(app.getAppPath(), 'runtimes', 'oax6-nightly')
+            if (fs.existsSync(defaultRuntimeSrc)) {
+                fs.cpSync(defaultRuntimeSrc, tmpDir, { recursive: true })
+            }
         }
 
         // 2. Copy data/* into tmp/scenario

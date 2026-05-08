@@ -1,0 +1,10 @@
+{
+    "runtimes": [
+        {
+            "name": "OAX6-nightly",
+            "directory": "oax6-nightly",
+            "code": "oax6-nightly",
+            "version": "1.0.0"
+        }
+    ]
+}

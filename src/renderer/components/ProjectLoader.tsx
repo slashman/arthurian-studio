@@ -11,27 +11,40 @@ interface Template {
   directory: string;
 }
 
+interface Runtime {
+  name: string;
+  directory: string;
+}
+
 const ProjectLoader: React.FC<ProjectLoaderProps> = ({ onOpen, initialShowNewProject = false }) => {
   const [showNewProject, setShowNewProject] = useState(initialShowNewProject);
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [runtimes, setRuntimes] = useState<Runtime[]>([]);
   const [projectName, setProjectName] = useState('MyNewProject');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [selectedRuntime, setSelectedRuntime] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchTemplates = async () => {
-      const data = await window.electron.getTemplates();
-      setTemplates(data.templates);
-      if (data.templates.length > 0) {
-        setSelectedTemplate(data.templates[0].directory);
+    const fetchData = async () => {
+      const templatesData = await window.electron.getTemplates();
+      setTemplates(templatesData.templates);
+      if (templatesData.templates.length > 0) {
+        setSelectedTemplate(templatesData.templates[0].directory);
+      }
+
+      const runtimesData = await window.electron.getRuntimes();
+      setRuntimes(runtimesData.runtimes);
+      if (runtimesData.runtimes.length > 0) {
+        setSelectedRuntime(runtimesData.runtimes[0].code);
       }
     };
-    fetchTemplates();
+    fetchData();
   }, []);
 
   const handleCreateProject = async () => {
-    if (!selectedTemplate) return;
+    if (!selectedTemplate || !selectedRuntime) return;
     try {
-        const newProjPath = await window.electron.createProject(projectName, selectedTemplate);
+        const newProjPath = await window.electron.createProject(projectName, selectedTemplate, selectedRuntime);
         if (newProjPath) {
             onOpen(newProjPath);
         }
@@ -56,7 +69,7 @@ const ProjectLoader: React.FC<ProjectLoaderProps> = ({ onOpen, initialShowNewPro
             />
           </div>
 
-          <div style={{ marginBottom: '25px' }}>
+          <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', color: '#ccc' }}>Select Template</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {templates.map(t => (
@@ -76,6 +89,31 @@ const ProjectLoader: React.FC<ProjectLoaderProps> = ({ onOpen, initialShowNewPro
                 >
                   <span>{t.name}</span>
                   {selectedTemplate === t.directory && <ChevronRight size={16} />}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '25px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#ccc' }}>Select Runtime</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {runtimes.map(r => (
+                <div 
+                  key={r.code}
+                  onClick={() => setSelectedRuntime(r.code)}
+                  style={{ 
+                    padding: '10px', 
+                    backgroundColor: selectedRuntime === r.code ? '#007acc' : '#3c3c3c',
+                    cursor: 'pointer',
+                    borderRadius: '4px',
+                    border: '1px solid #454545',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <span>{r.name}</span>
+                  {selectedRuntime === r.code && <ChevronRight size={16} />}
                 </div>
               ))}
             </div>
