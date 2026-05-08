@@ -4,6 +4,8 @@ import { useProject } from '../ProjectContext'
 import MapLayerSidebar from './MapLayerSidebar'
 import MapView from './MapView'
 import TilesetPicker from './TilesetPicker'
+import EditMapObjectModal, { MapObject } from './EditMapObjectModal'
+import mapObjectTypes from '../mapObjectTypes.json'
 
 interface TileMapEditorProps {
   filename: string;
@@ -20,6 +22,14 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const [activeLayerIdx, setActiveLayerIdx] = useState<number>(0);
   const [rightSidebarTab, setRightSidebarTab] = useState<'layers' | 'tilesets'>('tilesets');
   const [activeTile, setActiveTile] = useState<{ tilesetName: string, tileId: number } | null>(null);
+  const [editingObject, setEditingObject] = useState<MapObject | null>(null);
+  const [isNewObject, setIsNewObject] = useState(false);
+
+  const getLayerCategory = (lIdx: number) => {
+    if (!mapData) return null;
+    const layerName = mapData.layers[lIdx].name;
+    return mapObjectTypes.layerCategories.find(cat => layerName.includes(cat)) || null;
+  };
 
   const getMapPath = () => {
     if (!projectData || !filename) return null;
@@ -122,46 +132,129 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   };
 
   const handleCellClick = (lIdx: number, tIdx: number) => {
-    if (!activeTile || !mapData) return;
+    if (!mapData) return;
     if (lIdx !== activeLayerIdx) return;
     
     const layer = mapData.layers[lIdx];
-    if (layer.type !== 'tilelayer') return;
+    const { width, tilewidth, tileheight } = mapData;
+    const col = tIdx % width;
+    const row = Math.floor(tIdx / width);
 
-    const tileset = mapData.tilesets.find((ts: any) => ts.name === activeTile.tilesetName);
-    if (!tileset) return;
+    if (layer.type === 'tilelayer') {
+        if (!activeTile) return;
 
-    const newGid = tileset.firstgid + activeTile.tileId;
+        const tileset = mapData.tilesets.find((ts: any) => ts.name === activeTile.tilesetName);
+        if (!tileset) return;
 
+        const newGid = tileset.firstgid + activeTile.tileId;
+
+        setMapData((prev: any) => {
+            const newLayers = [...prev.layers];
+            const newLayer = { ...newLayers[lIdx] };
+            
+            let data = newLayer.data;
+            if (newLayer.encoding === 'base64') {
+                const binaryString = window.atob(newLayer.data);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const uint32Data = new Uint32Array(bytes.buffer);
+                uint32Data[tIdx] = newGid;
+                
+                const updatedBytes = new Uint8Array(uint32Data.buffer);
+                let updatedBinary = '';
+                for (let i = 0; i < updatedBytes.length; i++) {
+                    updatedBinary += String.fromCharCode(updatedBytes[i]);
+                }
+                newLayer.data = window.btoa(updatedBinary);
+            } else {
+                const newData = [...data];
+                newData[tIdx] = newGid;
+                newLayer.data = newData;
+            }
+            
+            newLayers[lIdx] = newLayer;
+            return { ...prev, layers: newLayers };
+        });
+    } else if (layer.type === 'objectgroup') {
+        const existingObj = (layer.objects || []).find((obj: any) => {
+            const objCol = Math.floor(obj.x / tilewidth);
+            const objRow = Math.floor(obj.y / tileheight) - 1; 
+            return objCol === col && objRow === row;
+        });
+
+        if (existingObj) {
+            setEditingObject(existingObj);
+            setIsNewObject(false);
+        } else {
+            if (!activeTile) {
+                alert('Please select a tile first to add an object.');
+                return;
+            }
+            const tileset = mapData.tilesets.find((ts: any) => ts.name === activeTile.tilesetName);
+            if (!tileset) return;
+            const gid = tileset.firstgid + activeTile.tileId;
+
+            const nextId = Math.max(0, ...mapData.layers.flatMap((l: any) => (l.objects || []).map((o: any) => o.id))) + 1;
+
+            setEditingObject({
+                id: nextId,
+                name: '',
+                type: '',
+                x: col * tilewidth,
+                y: (row + 1) * tileheight,
+                width: tilewidth,
+                height: tileheight,
+                gid: gid,
+                rotation: 0,
+                visible: true,
+                properties: {},
+                propertytypes: {}
+            });
+            setIsNewObject(true);
+        }
+    }
+  };
+
+  const handleConfirmObject = (updated: MapObject) => {
     setMapData((prev: any) => {
         const newLayers = [...prev.layers];
-        const newLayer = { ...newLayers[lIdx] };
+        const newLayer = { ...newLayers[activeLayerIdx] };
+        const objects = [...(newLayer.objects || [])];
         
-        let data = newLayer.data;
-        if (newLayer.encoding === 'base64') {
-            const binaryString = window.atob(newLayer.data);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            const uint32Data = new Uint32Array(bytes.buffer);
-            uint32Data[tIdx] = newGid;
-            
-            const updatedBytes = new Uint8Array(uint32Data.buffer);
-            let updatedBinary = '';
-            for (let i = 0; i < updatedBytes.length; i++) {
-                updatedBinary += String.fromCharCode(updatedBytes[i]);
-            }
-            newLayer.data = window.btoa(updatedBinary);
+        if (isNewObject) {
+            objects.push(updated);
         } else {
-            const newData = [...data];
-            newData[tIdx] = newGid;
-            newLayer.data = newData;
+            const idx = objects.findIndex(o => o.id === updated.id);
+            if (idx !== -1) {
+                objects[idx] = updated;
+            }
         }
         
-        newLayers[lIdx] = newLayer;
+        newLayer.objects = objects;
+        newLayers[activeLayerIdx] = newLayer;
         return { ...prev, layers: newLayers };
     });
+    setEditingObject(null);
+  };
+
+  const handleDeleteObject = (id: number) => {
+    setMapData((prev: any) => {
+        const newLayers = [...prev.layers];
+        const newLayer = { ...newLayers[activeLayerIdx] };
+        const objects = [...(newLayer.objects || [])];
+        
+        const idx = objects.findIndex(o => o.id === id);
+        if (idx !== -1) {
+            objects.splice(idx, 1);
+        }
+        
+        newLayer.objects = objects;
+        newLayers[activeLayerIdx] = newLayer;
+        return { ...prev, layers: newLayers };
+    });
+    setEditingObject(null);
   };
 
   if (loading) return <div className="main-area">Loading map {filename}...</div>;
@@ -249,6 +342,17 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                 </div>
             </div>
         </div>
+
+        {editingObject && (
+            <EditMapObjectModal 
+                object={editingObject}
+                isNew={isNewObject}
+                layerCategory={getLayerCategory(activeLayerIdx)}
+                onCancel={() => setEditingObject(null)}
+                onConfirm={handleConfirmObject}
+                onDelete={handleDeleteObject}
+            />
+        )}
     </div>
   )
 }

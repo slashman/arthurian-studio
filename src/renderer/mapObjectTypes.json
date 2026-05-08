@@ -1,0 +1,13 @@
+{
+  "layerCategories": ["Objects", "Items", "Mobs"],
+  "types": [
+    { "type": "Door", "category": "Objects", "properties": { "doorId": "", "doorTypeId": "", "remoteOnly": false } },
+    { "type": "Lever", "category": "Objects", "properties": { "defid": "", "hidden": false, "opensDoorId": "" } },
+    { "type": "Sign", "category": "Objects", "properties": { "defid": "", "signText": "" } },
+    { "type": "Stairs", "category": "Objects", "properties": { "appearanceId": "", "direction": "up", "isFloor": false } },
+    { "type": "Item", "category": "Items", "properties": { "itemId": "", "amount": 1 } },
+    { "type": "LightSource", "category": "Items", "properties": { "itemId": "", "isLit": true } },
+    { "type": "Mob", "category": "Mobs", "properties": { "mobId": "" } },
+    { "type": "NPC", "category": "Mobs", "properties": { "npcId": "" } }
+  ]
+}
