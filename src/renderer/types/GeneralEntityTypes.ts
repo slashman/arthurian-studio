@@ -6,6 +6,9 @@ import { ObjectType } from './ObjectEntityTypes';
 import { Scenario } from './ScenarioEntityTypes';
 
 export interface ArthurianProject {
+  projectName?: string;
+  templateCode?: string;
+  templateVersion?: string;
   studioVersion: string;
   arthurianVersion: string;
   appearancesFile: string;

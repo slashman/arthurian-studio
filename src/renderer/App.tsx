@@ -18,6 +18,7 @@ import EditWorld from './components/EditWorld'
 import EditWorldConfig from './components/EditWorldConfig'
 import EditTilesets from './components/EditTilesets'
 import EditTilesetModal from './components/EditTilesetModal'
+import EditProjectInfo from './components/EditProjectInfo'
 import Quickstart from './components/Quickstart'
 import ProjectLoader from './components/ProjectLoader'
 import TileMapEditor from './components/TileMapEditor'
@@ -27,20 +28,44 @@ import { ProjectData } from './types/GeneralEntityTypes'
 
 function App() {
   const { projectData, setProjectData } = useProject();
-  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor'>('quickstart')
+  const [activeTab, setActiveTab] = useState<'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor' | 'project-info'>('quickstart')
   const [selectedTilesetIndex, setSelectedTilesetIndex] = useState<number | null>(null)
   const [selectedMap, setSelectedMap] = useState<string | null>(null)
+  const [showNewProjectLoader, setShowNewProjectLoader] = useState(false)
 
   
   const [editingItem, setEditingItem] = useState<any | null>(null)
   const [editIndex, setEditIndex] = useState<number>(-1)
   const [editingSubtype, setEditingSubtype] = useState<'mobs' | 'items' | null>(null)
 
-  const handleOpenProject = async () => {
-    const data = await window.electron.openProject()
+  React.useEffect(() => {
+    const cleanup = window.electron.onMenuAction((action) => {
+      if (action === 'new-project') {
+        handleNewProject()
+      } else if (action === 'load-project') {
+        handleOpenProject()
+      } else if (action === 'project-info') {
+        if (projectData) handleSelectTab('project-info')
+      } else if (action === 'run-project') {
+        if (projectData) handleRunProject()
+      } else if (action === 'quickstart') {
+        handleSelectTab('quickstart')
+      }
+    })
+    return cleanup
+  }, [projectData])
+
+  const handleOpenProject = async (filePath?: string) => {
+    const data = await window.electron.openProject(filePath)
     if (data) {
       setProjectData(data as ProjectData)
+      setShowNewProjectLoader(false)
     }
+  }
+
+  const handleNewProject = () => {
+    setProjectData(null)
+    setShowNewProjectLoader(true)
   }
 
   const handleRunProject = async () => {
@@ -59,6 +84,12 @@ function App() {
 
   const handleSave = async () => {
     if (!projectData) return;
+
+    if (activeTab === 'project-info') {
+        await window.electron.saveData(projectData.filePath, projectData.project)
+        alert('Project configuration saved!')
+        return
+    }
 
     const { filePath, project } = projectData;
     const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
@@ -243,7 +274,7 @@ function App() {
     setEditingSubtype(null)
   }
 
-  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor') => {
+  const handleSelectTab = (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor' | 'project-info') => {
       setActiveTab(tab);
       if (tab !== 'appearances') setSelectedTilesetIndex(null);
       if (tab !== 'map-editor') setSelectedMap(null);
@@ -255,8 +286,10 @@ function App() {
   }
 
   if (!projectData) {
-    return <ProjectLoader onOpen={handleOpenProject} />
+    return <ProjectLoader onOpen={handleOpenProject} initialShowNewProject={showNewProjectLoader} />
   }
+
+  const projectDir = projectData.filePath.substring(0, Math.max(projectData.filePath.lastIndexOf('/'), projectData.filePath.lastIndexOf('\\')));
 
   return (
     <div className="app-container">
@@ -266,12 +299,16 @@ function App() {
         selectedTilesetIndex={selectedTilesetIndex}
         onSelectTab={handleSelectTab} 
         onSelectTileset={handleSelectTileset}
-        onLoadProject={handleOpenProject}
-        onRunProject={handleRunProject}
+        projectInfo={{
+          name: projectData.project.projectName || projectData.filePath.split(/[/\\]/).pop() || 'Untitled',
+          path: projectDir
+        }}
       />
 
       {activeTab === 'quickstart' ? (
           <Quickstart onNavigate={handleSelectTab} />
+      ) : activeTab === 'project-info' ? (
+          <EditProjectInfo onSave={handleSave} />
       ) : activeTab === 'scenario' ? (
           <EditScenario 
             scenario={projectData.data.scenario}

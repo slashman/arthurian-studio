@@ -1,9 +1,12 @@
 export interface ElectronAPI {
-  openProject: () => Promise<any>;
   saveData: (filePath: string, data: any) => Promise<boolean>;
   loadFile: (filePath: string) => Promise<string | null>;
   listFiles: (dirPath: string) => Promise<string[]>;
   runProject: (projectDir: string) => Promise<boolean>;
+  getTemplates: () => Promise<{ templates: { name: string; directory: string; code: string; version: string }[] }>;
+  createProject: (name: string, templateDir: string) => Promise<string | null>;
+  openProject: (filePath?: string) => Promise<any | null>;
+  onMenuAction: (callback: (action: string) => void) => (() => void);
 }
 
 declare global {

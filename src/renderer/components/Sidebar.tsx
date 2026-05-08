@@ -1,14 +1,13 @@
 import React, { useState } from 'react'
-import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box, FileText, Globe, Settings, FolderOpen, Layers, BookOpen, Play } from 'lucide-react'
+import { Users, Palette, ChevronDown, ChevronRight, FileJson, Sword, Box, FileText, Globe, Settings, FolderOpen, Layers, BookOpen, Play, FilePlus, Info } from 'lucide-react'
 
 interface SidebarProps {
-  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor';
+  activeTab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor' | 'project-info';
   tilesets: { id: string }[];
   selectedTilesetIndex: number | null;
-  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor') => void;
+  onSelectTab: (tab: 'mobTypes' | 'appearances' | 'items' | 'npcs' | 'objectTypes' | 'scenario' | 'cutscenes' | 'world-config' | 'world-maps' | 'tilesets' | 'quickstart' | 'map-editor' | 'project-info') => void;
   onSelectTileset: (index: number) => void;
-  onLoadProject: () => void;
-  onRunProject: () => void;
+  projectInfo?: { name: string; path: string };
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
@@ -17,26 +16,25 @@ const Sidebar: React.FC<SidebarProps> = ({
   selectedTilesetIndex, 
   onSelectTab, 
   onSelectTileset,
-  onLoadProject,
-  onRunProject
+  projectInfo
 }) => {
   const [tilesetsExpanded, setTilesetsExpanded] = useState(true);
   const [worldExpanded, setWorldExpanded] = useState(true);
 
   return (
     <div className="sidebar" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div className="sidebar-header">Explorer</div>
+      <div className="sidebar-header" style={{ padding: '15px' }}>
+          <div style={{ fontWeight: 'bold', fontSize: '1rem', color: '#fff', marginBottom: '4px' }}>
+              {projectInfo?.name || 'Arthurian Studio'}
+          </div>
+          {projectInfo && (
+              <div style={{ fontSize: '0.7rem', color: '#858585', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {projectInfo.path}
+              </div>
+          )}
+      </div>
       
       <div style={{ flexGrow: 1, overflowY: 'auto' }}>
-          {/* Quickstart Header */}
-          <div 
-            className={`sidebar-item ${activeTab === 'quickstart' ? 'active' : ''}`}
-            onClick={() => onSelectTab('quickstart')}
-            style={{ borderBottom: '1px solid #333', marginBottom: '10px', paddingBottom: '10px' }}
-          >
-            <BookOpen size={16} color="#4ec9b0" /> Quickstart
-          </div>
-
           {/* Scenario Header */}
           <div 
             className={`sidebar-item ${activeTab === 'scenario' ? 'active' : ''}`}
@@ -153,23 +151,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 ))}
             </div>
           )}
-      </div>
-
-      <div style={{ borderTop: '1px solid #333', padding: '10px 0' }}>
-          <div 
-            className="sidebar-item"
-            onClick={onRunProject}
-            style={{ color: '#4ec9b0' }}
-          >
-            <Play size={16} /> Run Project
-          </div>
-          <div 
-            className="sidebar-item"
-            onClick={onLoadProject}
-            style={{ color: '#4ec9b0' }}
-          >
-            <FolderOpen size={16} /> Load Project
-          </div>
       </div>
     </div>
   )

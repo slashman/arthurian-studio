@@ -3,6 +3,7 @@ const path = require('path')
 const fs = require('fs')
 const { pathToFileURL } = require('url')
 const { getFreePort, startStaticServer, stopStaticServer } = require('./staticServer')
+const { createMenu } = require('./menu')
 
 // Register protocol before app is ready
 protocol.registerSchemesAsPrivileged([
@@ -27,6 +28,8 @@ function createWindow() {
   } else {
     win.loadFile(path.join(__dirname, '../renderer/index.html'))
   }
+
+  createMenu(win)
 }
 
 app.whenReady().then(() => {
@@ -75,15 +78,71 @@ app.on('window-all-closed', () => {
   }
 })
 
-ipcMain.handle('open-project', async () => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    filters: [{ name: 'Arthurian Project', extensions: ['arthurian'] }],
-    properties: ['openFile']
-  })
+ipcMain.handle('get-templates', async () => {
+    try {
+        const templatesPath = path.join(app.getAppPath(), 'templates', 'templates.json')
+        if (!fs.existsSync(templatesPath)) return { templates: [] }
+        return JSON.parse(fs.readFileSync(templatesPath, 'utf8'))
+    } catch (e) {
+        console.error('[IPC] get-templates error:', e)
+        return { templates: [] }
+    }
+})
 
-  if (canceled || filePaths.length === 0) return null
+ipcMain.handle('create-project', async (event, { name, templateDir }) => {
+    try {
+        const { canceled, filePaths } = await dialog.showOpenDialog({
+            properties: ['openDirectory', 'createDirectory'],
+            title: 'Select Project Directory'
+        })
 
-  const filePath = filePaths[0]
+        if (canceled || filePaths.length === 0) return null
+
+        const projectDir = filePaths[0]
+        const templatesJsonPath = path.join(app.getAppPath(), 'templates', 'templates.json')
+        const templatesData = JSON.parse(fs.readFileSync(templatesJsonPath, 'utf8'))
+        const template = templatesData.templates.find(t => t.directory === templateDir)
+        
+        const templatePath = path.join(app.getAppPath(), 'templates', templateDir)
+        if (!fs.existsSync(templatePath)) throw new Error(`Template not found: ${templateDir}`)
+
+        // Copy template contents
+        fs.cpSync(templatePath, projectDir, { recursive: true })
+
+        // Update and rename project.arthurian
+        const oldProjPath = path.join(projectDir, 'project.arthurian')
+        const newProjPath = path.join(projectDir, `${name}.arthurian`)
+        
+        if (fs.existsSync(oldProjPath)) {
+            const projectData = JSON.parse(fs.readFileSync(oldProjPath, 'utf8'))
+            projectData.projectName = name
+            if (template) {
+                projectData.templateCode = template.code
+                projectData.templateVersion = template.version
+            }
+            fs.writeFileSync(oldProjPath, JSON.stringify(projectData, null, 2), 'utf8')
+            fs.renameSync(oldProjPath, newProjPath)
+        }
+
+        // Return path for immediate opening
+        return newProjPath
+    } catch (e) {
+        console.error('[IPC] create-project error:', e)
+        throw e
+    }
+})
+
+ipcMain.handle('open-project', async (event, externalPath) => {
+  let filePath = externalPath;
+  if (!filePath) {
+      const { canceled, filePaths } = await dialog.showOpenDialog({
+        filters: [{ name: 'Arthurian Project', extensions: ['arthurian'] }],
+        properties: ['openFile']
+      })
+      if (canceled || filePaths.length === 0) return null
+      filePath = filePaths[0]
+  }
+
   const projectDir = path.dirname(filePath)
   const content = fs.readFileSync(filePath, 'utf8')
   
