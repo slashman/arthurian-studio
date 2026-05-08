@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Save } from 'lucide-react'
+import { Save, Undo, Redo } from 'lucide-react'
 import { useProject } from '../ProjectContext'
+import { useMapHistory } from '../hooks/useMapHistory'
 import MapLayerSidebar from './MapLayerSidebar'
 import MapView from './MapView'
 import TilesetPicker from './TilesetPicker'
@@ -13,7 +14,7 @@ interface TileMapEditorProps {
 
 const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const { projectData } = useProject();
-  const [mapData, setMapData] = useState<any>(null);
+  const { mapData, setMapData, performAction, undo, redo, canUndo, canRedo } = useMapHistory(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [tilesetPaths, setTilesetPaths] = useState<Record<string, string>>({});
@@ -131,6 +132,20 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
       setVisibleLayers(prev => ({ ...prev, [idx]: !prev[idx] }));
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'z') {
+        e.preventDefault();
+        undo();
+      } else if (e.ctrlKey && (e.key === 'y' || (e.shiftKey && e.key === 'Z'))) {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
+
   const handleCellClick = (lIdx: number, tIdx: number) => {
     if (!mapData) return;
     if (lIdx !== activeLayerIdx) return;
@@ -148,34 +163,27 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
 
         const newGid = tileset.firstgid + activeTile.tileId;
 
-        setMapData((prev: any) => {
-            const newLayers = [...prev.layers];
-            const newLayer = { ...newLayers[lIdx] };
-            
-            let data = newLayer.data;
-            if (newLayer.encoding === 'base64') {
-                const binaryString = window.atob(newLayer.data);
-                const bytes = new Uint8Array(binaryString.length);
-                for (let i = 0; i < binaryString.length; i++) {
-                    bytes[i] = binaryString.charCodeAt(i);
-                }
-                const uint32Data = new Uint32Array(bytes.buffer);
-                uint32Data[tIdx] = newGid;
-                
-                const updatedBytes = new Uint8Array(uint32Data.buffer);
-                let updatedBinary = '';
-                for (let i = 0; i < updatedBytes.length; i++) {
-                    updatedBinary += String.fromCharCode(updatedBytes[i]);
-                }
-                newLayer.data = window.btoa(updatedBinary);
-            } else {
-                const newData = [...data];
-                newData[tIdx] = newGid;
-                newLayer.data = newData;
+        let oldGid = 0;
+        if (layer.encoding === 'base64') {
+            const binaryString = window.atob(layer.data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
             }
-            
-            newLayers[lIdx] = newLayer;
-            return { ...prev, layers: newLayers };
+            const uint32Data = new Uint32Array(bytes.buffer);
+            oldGid = uint32Data[tIdx];
+        } else {
+            oldGid = layer.data[tIdx];
+        }
+
+        if (oldGid === newGid) return;
+
+        performAction({
+            type: 'DRAW_TILE',
+            lIdx,
+            tIdx,
+            oldGid,
+            newGid
         });
     } else if (layer.type === 'objectgroup') {
         const existingObj = (layer.objects || []).find((obj: any) => {
@@ -218,42 +226,35 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   };
 
   const handleConfirmObject = (updated: MapObject) => {
-    setMapData((prev: any) => {
-        const newLayers = [...prev.layers];
-        const newLayer = { ...newLayers[activeLayerIdx] };
-        const objects = [...(newLayer.objects || [])];
-        
-        if (isNewObject) {
-            objects.push(updated);
-        } else {
-            const idx = objects.findIndex(o => o.id === updated.id);
-            if (idx !== -1) {
-                objects[idx] = updated;
-            }
+    if (isNewObject) {
+        performAction({
+            type: 'CREATE_OBJECT',
+            lIdx: activeLayerIdx,
+            object: updated
+        });
+    } else {
+        const oldObject = (mapData.layers[activeLayerIdx].objects || []).find((o: any) => o.id === updated.id);
+        if (oldObject) {
+            performAction({
+                type: 'UPDATE_OBJECT',
+                lIdx: activeLayerIdx,
+                oldObject: { ...oldObject },
+                newObject: updated
+            });
         }
-        
-        newLayer.objects = objects;
-        newLayers[activeLayerIdx] = newLayer;
-        return { ...prev, layers: newLayers };
-    });
+    }
     setEditingObject(null);
   };
 
   const handleDeleteObject = (id: number) => {
-    setMapData((prev: any) => {
-        const newLayers = [...prev.layers];
-        const newLayer = { ...newLayers[activeLayerIdx] };
-        const objects = [...(newLayer.objects || [])];
-        
-        const idx = objects.findIndex(o => o.id === id);
-        if (idx !== -1) {
-            objects.splice(idx, 1);
-        }
-        
-        newLayer.objects = objects;
-        newLayers[activeLayerIdx] = newLayer;
-        return { ...prev, layers: newLayers };
-    });
+    const oldObject = (mapData.layers[activeLayerIdx].objects || []).find((o: any) => o.id === id);
+    if (oldObject) {
+        performAction({
+            type: 'DELETE_OBJECT',
+            lIdx: activeLayerIdx,
+            object: { ...oldObject }
+        });
+    }
     setEditingObject(null);
   };
 
@@ -266,9 +267,29 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   return (
     <div className="main-area" style={{ padding: 0, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '10px 20px', background: '#252526', borderBottom: '1px solid #333', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 }}>
-            <div>
-                <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Map Editor: {filename}</h2>
-                <div style={{ fontSize: '0.8rem', color: '#888' }}>{width}x{height} tiles ({tilewidth}x{tileheight})</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div>
+                    <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Map Editor: {filename}</h2>
+                    <div style={{ fontSize: '0.8rem', color: '#888' }}>{width}x{height} tiles ({tilewidth}x{tileheight})</div>
+                </div>
+                <div style={{ display: 'flex', background: '#333', borderRadius: '4px', padding: '2px' }}>
+                    <button 
+                        onClick={undo} 
+                        disabled={!canUndo}
+                        title="Undo (Ctrl+Z)"
+                        style={{ background: 'none', border: 'none', color: canUndo ? '#fff' : '#666', padding: '6px 10px', cursor: canUndo ? 'pointer' : 'default', display: 'flex', alignItems: 'center' }}
+                    >
+                        <Undo size={18} />
+                    </button>
+                    <button 
+                        onClick={redo} 
+                        disabled={!canRedo}
+                        title="Redo (Ctrl+Y)"
+                        style={{ background: 'none', border: 'none', color: canRedo ? '#fff' : '#666', padding: '6px 10px', cursor: canRedo ? 'pointer' : 'default', display: 'flex', alignItems: 'center' }}
+                    >
+                        <Redo size={18} />
+                    </button>
+                </div>
             </div>
             <button 
                 onClick={handleSave} 
