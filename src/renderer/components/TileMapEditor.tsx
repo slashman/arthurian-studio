@@ -12,6 +12,10 @@ interface TileMapEditorProps {
   filename: string;
 }
 
+interface TileMapEditorProps {
+  filename: string;
+}
+
 const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const { projectData } = useProject();
   const { mapData, setMapData, performAction, undo, redo, canUndo, canRedo } = useMapHistory(null);
@@ -25,6 +29,7 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const [activeTile, setActiveTile] = useState<{ tilesetName: string, tileId: number } | null>(null);
   const [editingObject, setEditingObject] = useState<MapObject | null>(null);
   const [isNewObject, setIsNewObject] = useState(false);
+  const strokeBuffer = React.useRef<{ lIdx: number, tIdx: number, oldGid: number, newGid: number }[] | null>(null);
 
   const getLayerCategory = (lIdx: number) => {
     if (!mapData) return null;
@@ -146,6 +151,20 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo, redo]);
 
+  const handleMouseDown = () => {
+    strokeBuffer.current = [];
+  };
+
+  const handleMouseUp = () => {
+    if (strokeBuffer.current && strokeBuffer.current.length > 0) {
+      performAction({
+        type: 'MULTI_DRAW_TILE',
+        actions: [...strokeBuffer.current]
+      });
+    }
+    strokeBuffer.current = null;
+  };
+
   const handleCellClick = (lIdx: number, tIdx: number) => {
     if (!mapData) return;
     if (lIdx !== activeLayerIdx) return;
@@ -157,6 +176,9 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
 
     if (layer.type === 'tilelayer') {
         if (!activeTile) return;
+
+        // If we're in a stroke, avoid double-drawing the same tile in the same stroke
+        if (strokeBuffer.current && strokeBuffer.current.some(a => a.tIdx === tIdx && a.lIdx === lIdx)) return;
 
         const tileset = mapData.tilesets.find((ts: any) => ts.name === activeTile.tilesetName);
         if (!tileset) return;
@@ -178,14 +200,48 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
 
         if (oldGid === newGid) return;
 
-        performAction({
-            type: 'DRAW_TILE',
-            lIdx,
-            tIdx,
-            oldGid,
-            newGid
-        });
+        const action = { lIdx, tIdx, oldGid, newGid };
+
+        if (strokeBuffer.current) {
+            strokeBuffer.current.push(action);
+            
+            const newData = { ...mapData, layers: [...mapData.layers] };
+            const newLayer = { ...newData.layers[lIdx] };
+            newData.layers[lIdx] = newLayer;
+
+            if (newLayer.encoding === 'base64') {
+                const binaryString = window.atob(newLayer.data);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const uint32Data = new Uint32Array(bytes.buffer);
+                uint32Data[tIdx] = newGid;
+                const updatedBytes = new Uint8Array(uint32Data.buffer);
+                let updatedBinary = '';
+                for (let i = 0; i < updatedBytes.length; i++) {
+                    updatedBinary += String.fromCharCode(updatedBytes[i]);
+                }
+                newLayer.data = window.btoa(updatedBinary);
+            } else {
+                const layerData = [...newLayer.data];
+                layerData[tIdx] = newGid;
+                newLayer.data = layerData;
+            }
+            setMapData(newData);
+        } else {
+            // Single click
+            performAction({
+                type: 'DRAW_TILE',
+                lIdx,
+                tIdx,
+                oldGid,
+                newGid
+            });
+        }
     } else if (layer.type === 'objectgroup') {
+        if (strokeBuffer.current) return; // Don't drag-create objects
+
         const existingObj = (layer.objects || []).find((obj: any) => {
             const objCol = Math.floor(obj.x / tilewidth);
             const objRow = Math.floor(obj.y / tileheight) - 1; 
@@ -309,6 +365,8 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                 visibleLayers={visibleLayers}
                 activeLayerIdx={activeLayerIdx}
                 onCellClick={handleCellClick}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
             />
 
             <div style={{ width: '300px', display: 'flex', flexDirection: 'column', borderLeft: '1px solid #333' }}>

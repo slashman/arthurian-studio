@@ -6,13 +6,17 @@ interface MapViewProps {
   visibleLayers: Record<number, boolean>;
   activeLayerIdx: number;
   onCellClick: (lIdx: number, tIdx: number) => void;
+  onMouseDown?: () => void;
+  onMouseUp?: () => void;
 }
 
-const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers, activeLayerIdx, onCellClick }) => {
+const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers, activeLayerIdx, onCellClick, onMouseDown, onMouseUp }) => {
   const { width, height, tilewidth, tileheight, layers, tilesets } = mapData;
   const [hoverPos, setHoverPos] = useState<{ col: number, row: number } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [images, setImages] = useState<Record<string, HTMLImageElement>>({});
+  const isMouseDown = useRef(false);
+  const lastProcessedPos = useRef<{ col: number, row: number } | null>(null);
 
   // Load tileset images
   useEffect(() => {
@@ -126,19 +130,15 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
     ctx.globalAlpha = 1;
   }, [mapData, visibleLayers, images]);
 
-  const handleMapClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const col = Math.floor(x / tilewidth);
-    const row = Math.floor(y / tileheight);
-    
-    if (col >= 0 && col < width && row >= 0 && row < height) {
-        const tIdx = row * width + col;
-        onCellClick(activeLayerIdx, tIdx);
-    }
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    isMouseDown.current = true;
+    onMouseDown?.();
+    handleMouseMove(e); // Trigger first click
+  };
+
+  const handleMouseUp = () => {
+    isMouseDown.current = false;
+    onMouseUp?.();
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -152,6 +152,10 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
     
     if (col >= 0 && col < width && row >= 0 && row < height) {
         setHoverPos({ col, row });
+        if (isMouseDown.current) {
+            const tIdx = row * width + col;
+            onCellClick(activeLayerIdx, tIdx);
+        }
     } else {
         setHoverPos(null);
     }
@@ -159,6 +163,10 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
 
   const handleMouseLeave = () => {
     setHoverPos(null);
+    if (isMouseDown.current) {
+        isMouseDown.current = false;
+        onMouseUp?.();
+    }
   };
 
   return (
@@ -175,7 +183,8 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
           ref={canvasRef}
           width={width * tilewidth}
           height={height * tileheight}
-          onClick={handleMapClick}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           style={{ 

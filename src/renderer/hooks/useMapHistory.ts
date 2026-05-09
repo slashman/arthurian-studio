@@ -3,6 +3,7 @@ import { MapObject } from '../components/EditMapObjectModal'
 
 export type MapAction = 
     | { type: 'DRAW_TILE', lIdx: number, tIdx: number, oldGid: number, newGid: number }
+    | { type: 'MULTI_DRAW_TILE', actions: { lIdx: number, tIdx: number, oldGid: number, newGid: number }[] }
     | { type: 'CREATE_OBJECT', lIdx: number, object: MapObject }
     | { type: 'UPDATE_OBJECT', lIdx: number, oldObject: MapObject, newObject: MapObject }
     | { type: 'DELETE_OBJECT', lIdx: number, object: MapObject };
@@ -22,7 +23,39 @@ export const useMapHistory = (initialMapData: any) => {
 
     const applyAction = (data: any, action: MapAction, isUndo: boolean) => {
         if (!data) return data;
-        const newData = { ...data, layers: [...data.layers] };
+        let newData = { ...data, layers: [...data.layers] };
+
+        if (action.type === 'MULTI_DRAW_TILE') {
+            action.actions.forEach(subAction => {
+                const { lIdx, tIdx, oldGid, newGid } = subAction;
+                const gid = isUndo ? oldGid : newGid;
+                const layer = { ...newData.layers[lIdx] };
+                newData.layers[lIdx] = layer;
+
+                if (layer.encoding === 'base64') {
+                    const binaryString = window.atob(layer.data);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    const uint32Data = new Uint32Array(bytes.buffer);
+                    uint32Data[tIdx] = gid;
+                    
+                    const updatedBytes = new Uint8Array(uint32Data.buffer);
+                    let updatedBinary = '';
+                    for (let i = 0; i < updatedBytes.length; i++) {
+                        updatedBinary += String.fromCharCode(updatedBytes[i]);
+                    }
+                    layer.data = window.btoa(updatedBinary);
+                } else {
+                    const layerData = [...layer.data];
+                    layerData[tIdx] = gid;
+                    layer.data = layerData;
+                }
+            });
+            return newData;
+        }
+
         const { lIdx, type } = action;
         const layer = { ...newData.layers[lIdx] };
         newData.layers[lIdx] = layer;
