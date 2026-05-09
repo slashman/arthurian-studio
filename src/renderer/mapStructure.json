@@ -1,0 +1,111 @@
+{
+  "layers": [
+    {
+      "name": "Tiles 1",
+      "type": "tilelayer"
+    },
+    {
+      "name": "Tiles 2",
+      "type": "tilelayer"
+    },
+    {
+      "name": "Tiles 3",
+      "type": "tilelayer"
+    },
+    {
+      "name": "Tiles 4",
+      "type": "tilelayer"
+    },
+    {
+      "name": "Mobs",
+      "type": "objectgroup"
+    },
+    {
+      "name": "Items",
+      "type": "objectgroup"
+    },
+    {
+      "name": "Objects",
+      "type": "objectgroup"
+    },
+    {
+      "name": "SolidTiles",
+      "type": "tilelayer",
+      "visible": false
+    },
+    {
+      "name": "OpaqueTiles",
+      "type": "tilelayer"
+    }
+  ],
+  "tilesets": [
+    {
+      "columns": 33,
+      "firstgid": 1,
+      "image": "..\/..\/..\/assets\/terrain.png",
+      "imageheight": 720,
+      "imagewidth": 528,
+      "margin": 0,
+      "name": "terrain",
+      "spacing": 0,
+      "tilecount": 1485,
+      "tileheight": 16,
+      "tiles": {
+        "18": {
+          "type": "door"
+        },
+        "19": {
+          "type": "door"
+        },
+        "20": {
+          "type": "door"
+        },
+        "21": {
+          "type": "door"
+        },
+        "51": {
+          "type": "door"
+        },
+        "52": {
+          "type": "door"
+        },
+        "53": {
+          "type": "door"
+        },
+        "54": {
+          "type": "door"
+        }
+      },
+      "tilewidth": 16,
+      "transparentcolor": "#476c6c"
+    },
+    {
+      "columns": 16,
+      "firstgid": 1486,
+      "image": "..\/..\/..\/assets\/mobs.png",
+      "imageheight": 512,
+      "imagewidth": 256,
+      "margin": 0,
+      "name": "mobs",
+      "spacing": 0,
+      "tilecount": 512,
+      "tileheight": 16,
+      "tilewidth": 16,
+      "transparentcolor": "#476c6c"
+    },
+    {
+      "columns": 16,
+      "firstgid": 1998,
+      "image": "..\/..\/..\/assets\/items.png",
+      "imageheight": 256,
+      "imagewidth": 256,
+      "margin": 0,
+      "name": "items",
+      "spacing": 0,
+      "tilecount": 256,
+      "tileheight": 16,
+      "tilewidth": 16,
+      "transparentcolor": "#476c6c"
+    }
+  ]
+}
