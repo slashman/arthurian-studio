@@ -37,14 +37,20 @@ app.whenReady().then(() => {
   protocol.handle('media', (request) => {
     try {
         const url = new URL(request.url)
-        // url.pathname will be /D:/path on Windows or /Users/path on Mac
         let filePath = decodeURIComponent(url.pathname)
-        
-        // On Windows, we need to strip the leading slash from /D:/...
-        if (process.platform === 'win32' && filePath.startsWith('/') && /^\/[a-zA-Z]:/.test(filePath)) {
-            filePath = filePath.slice(1)
+        if (process.platform === 'win32') {
+            // Windows: pathname is /D:/path — strip leading slash
+            if (/^\/[a-zA-Z]:/.test(filePath)) {
+                filePath = filePath.slice(1)
+            }
+        } else {
+            // macOS/Linux: hostname holds the first path segment
+            // e.g. media://Users/slashie/... → hostname="Users", pathname="/slashie/..."
+            const hostname = decodeURIComponent(url.hostname)
+            if (hostname) {
+                filePath = '/' + hostname + filePath
+            }
         }
-        
         filePath = path.normalize(filePath)
 
         console.log('[Media Protocol] URL:', request.url)
@@ -54,7 +60,7 @@ app.whenReady().then(() => {
             console.error('[Media Protocol] File NOT found:', filePath)
             return new Response('File Not Found', { status: 404 })
         }
-        
+
         const fileUrl = pathToFileURL(filePath).toString()
         return electronNet.fetch(fileUrl)
     } catch (e) {
