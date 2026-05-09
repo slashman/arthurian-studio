@@ -9,6 +9,9 @@
 - **Project Structure:** Follow the Electron + React (Vite) structure with `src/main`, `src/preload`, and `src/renderer`.
 - **Styling:** Adhere to the VS Code-inspired dark theme and custom CSS.
 - **Type Safety:** Maintain strict TypeScript interfaces in the `src/renderer/types/` directory for all project data.
+- **Code Style & Architecture:**
+    - **Modularization:** Avoid monolithic components. Prefer splitting logic and UI into smaller, reusable components, classes, or files to maintain readability and testability.
+    - **Styling:** Avoid inline styling (`style={{...}}`) within component JSX. Instead, use external CSS classes (App.css) or dedicated style objects defined outside the component's render logic to ensure a clean separation of concerns.
 - **UI Design:**
     - Any text field related to an `appearance id` must include a "browse" button that opens an `AppearancePickerModal`.
     - Any text field related to an `item id` must include a "browse" button that opens an `ItemPickerModal`.
