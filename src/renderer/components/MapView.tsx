@@ -52,6 +52,7 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
   };
 
   const decodeLayerData = (layer: any) => {
+    if (layer.data instanceof Uint32Array) return Array.from(layer.data);
     if (layer.encoding === 'base64') {
       const binaryString = window.atob(layer.data);
       const bytes = new Uint8Array(binaryString.length);

@@ -23,7 +23,7 @@ export const useMapHistory = (initialMapData: any) => {
 
     const applyAction = (data: any, action: MapAction, isUndo: boolean) => {
         if (!data) return data;
-        let newData = { ...data, layers: [...data.layers] };
+        const newData = { ...data, layers: [...data.layers] };
 
         if (action.type === 'MULTI_DRAW_TILE') {
             action.actions.forEach(subAction => {
@@ -32,21 +32,9 @@ export const useMapHistory = (initialMapData: any) => {
                 const layer = { ...newData.layers[lIdx] };
                 newData.layers[lIdx] = layer;
 
-                if (layer.encoding === 'base64') {
-                    const binaryString = window.atob(layer.data);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    const uint32Data = new Uint32Array(bytes.buffer);
-                    uint32Data[tIdx] = gid;
-                    
-                    const updatedBytes = new Uint8Array(uint32Data.buffer);
-                    let updatedBinary = '';
-                    for (let i = 0; i < updatedBytes.length; i++) {
-                        updatedBinary += String.fromCharCode(updatedBytes[i]);
-                    }
-                    layer.data = window.btoa(updatedBinary);
+                // Data is now assumed to be a Uint32Array or similar raw format in memory
+                if (layer.data instanceof Uint32Array) {
+                    layer.data[tIdx] = gid;
                 } else {
                     const layerData = [...layer.data];
                     layerData[tIdx] = gid;
@@ -65,21 +53,8 @@ export const useMapHistory = (initialMapData: any) => {
                 const { tIdx, oldGid, newGid } = action;
                 const gid = isUndo ? oldGid : newGid;
                 
-                if (layer.encoding === 'base64') {
-                    const binaryString = window.atob(layer.data);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    const uint32Data = new Uint32Array(bytes.buffer);
-                    uint32Data[tIdx] = gid;
-                    
-                    const updatedBytes = new Uint8Array(uint32Data.buffer);
-                    let updatedBinary = '';
-                    for (let i = 0; i < updatedBytes.length; i++) {
-                        updatedBinary += String.fromCharCode(updatedBytes[i]);
-                    }
-                    layer.data = window.btoa(updatedBinary);
+                if (layer.data instanceof Uint32Array) {
+                    layer.data[tIdx] = gid;
                 } else {
                     const layerData = [...layer.data];
                     layerData[tIdx] = gid;
