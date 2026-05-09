@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Save, Undo, Redo } from 'lucide-react'
+import { Save, Undo, Redo, Edit3, PaintBucket } from 'lucide-react'
 import { useProject } from '../ProjectContext'
 import { useMapHistory } from '../hooks/useMapHistory'
 import MapLayerSidebar from './MapLayerSidebar'
@@ -21,6 +21,8 @@ const STYLES = {
     historyControls: { display: 'flex', background: '#333', borderRadius: '4px', padding: '2px' } as React.CSSProperties,
     historyButton: (disabled: boolean) => ({ background: 'none', border: 'none', color: !disabled ? '#fff' : '#666', padding: '6px 10px', cursor: !disabled ? 'pointer' : 'default', display: 'flex', alignItems: 'center' }) as React.CSSProperties,
     saveButton: { display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 15px' } as React.CSSProperties,
+    toolToggle: { display: 'flex', background: '#333', borderRadius: '4px', padding: '2px', marginLeft: '10px' } as React.CSSProperties,
+    toolButton: (active: boolean) => ({ background: active ? '#007acc' : 'none', border: 'none', color: '#fff', padding: '6px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', borderRadius: '2px' }) as React.CSSProperties,
     mainContent: { display: 'flex', flexGrow: 1, overflow: 'hidden' } as React.CSSProperties,
     sidebar: { width: '300px', display: 'flex', flexDirection: 'column', borderLeft: '1px solid #333' } as React.CSSProperties,
     tabContainer: { display: 'flex', background: '#1e1e1e', borderBottom: '1px solid #333' } as React.CSSProperties,
@@ -47,6 +49,7 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const [activeLayerIdx, setActiveLayerIdx] = useState<number>(0);
   const [rightSidebarTab, setRightSidebarTab] = useState<'layers' | 'tilesets'>('tilesets');
   const [activeTile, setActiveTile] = useState<{ tilesetName: string, tileId: number } | null>(null);
+  const [activeTool, setActiveTool] = useState<'stamp' | 'bucket'>('stamp');
   const [editingObject, setEditingObject] = useState<MapObject | null>(null);
   const [isNewObject, setIsNewObject] = useState(false);
   const strokeBuffer = useRef<{ lIdx: number, tIdx: number, oldGid: number, newGid: number }[] | null>(null);
@@ -231,6 +234,63 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
     lastProcessedPos.current = null;
   };
 
+  const handleBucketFill = (lIdx: number, tIdx: number) => {
+    if (!mapData || !activeTile) return;
+    const layer = mapData.layers[lIdx];
+    if (layer.type !== 'tilelayer') return;
+
+    const { width, height } = mapData;
+    const targetGid = layer.data[tIdx];
+    
+    const tileset = mapData.tilesets.find((ts: any) => ts.name === activeTile.tilesetName);
+    if (!tileset) return;
+    const fillGid = tileset.firstgid + activeTile.tileId;
+
+    if (targetGid === fillGid) return;
+
+    const actions: { lIdx: number, tIdx: number, oldGid: number, newGid: number }[] = [];
+    const visited = new Set<number>();
+    const queue = [tIdx];
+    visited.add(tIdx);
+
+    while (queue.length > 0) {
+        const currIdx = queue.shift()!;
+        const currGid = layer.data[currIdx];
+
+        if (currGid === targetGid) {
+            actions.push({ lIdx, tIdx: currIdx, oldGid: currGid, newGid: fillGid });
+            
+            // Check neighbors (4-way)
+            const x = currIdx % width;
+            const y = Math.floor(currIdx / width);
+
+            const neighbors = [
+                { x: x + 1, y: y },
+                { x: x - 1, y: y },
+                { x: x, y: y + 1 },
+                { x: x, y: y - 1 }
+            ];
+
+            for (const n of neighbors) {
+                if (n.x >= 0 && n.x < width && n.y >= 0 && n.y < height) {
+                    const nIdx = n.y * width + n.x;
+                    if (!visited.has(nIdx)) {
+                        visited.add(nIdx);
+                        queue.push(nIdx);
+                    }
+                }
+            }
+        }
+    }
+
+    if (actions.length > 0) {
+        performAction({
+            type: 'MULTI_DRAW_TILE',
+            actions
+        });
+    }
+  };
+
   const handleCellClick = (lIdx: number, tIdx: number) => {
     if (!mapData) return;
     const layer = mapData.layers[lIdx];
@@ -284,6 +344,11 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
         }
     } else if (layer.type === 'tilelayer') {
         if (lIdx !== activeLayerIdx) return;
+
+        if (activeTool === 'bucket') {
+            handleBucketFill(lIdx, tIdx);
+            return;
+        }
 
         // Continuous stamping interpolation
         if (isMouseDown.current && lastProcessedPos.current) {
@@ -404,16 +469,16 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                     <div style={STYLES.subtitle}>{width}x{height} tiles ({tilewidth}x{tileheight})</div>
                 </div>
                 <div style={STYLES.historyControls}>
-                    <button 
-                        onClick={undo} 
+                    <button
+                        onClick={undo}
                         disabled={!canUndo}
                         title="Undo (Ctrl+Z)"
                         style={STYLES.historyButton(!canUndo)}
                     >
                         <Undo size={18} />
                     </button>
-                    <button 
-                        onClick={redo} 
+                    <button
+                        onClick={redo}
                         disabled={!canRedo}
                         title="Redo (Ctrl+Y)"
                         style={STYLES.historyButton(!canRedo)}
@@ -421,7 +486,25 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                         <Redo size={18} />
                     </button>
                 </div>
-            </div>
+
+                <div style={STYLES.toolToggle}>
+                    <button 
+                        onClick={() => setActiveTool('stamp')}
+                        title="Stamp Tool"
+                        style={STYLES.toolButton(activeTool === 'stamp')}
+                    >
+                        <Edit3 size={18} />
+                    </button>
+                    <button 
+                        onClick={() => setActiveTool('bucket')}
+                        title="Bucket Fill Tool"
+                        style={STYLES.toolButton(activeTool === 'bucket')}
+                    >
+                        <PaintBucket size={18} />
+                    </button>
+                </div>
+                </div>
+
             <button 
                 onClick={handleSave} 
                 disabled={saving}
