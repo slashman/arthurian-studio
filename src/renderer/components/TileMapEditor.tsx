@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Save, Undo, Redo, Edit3, PaintBucket } from 'lucide-react'
+import { Save, Undo, Redo, Edit3, PaintBucket, Eraser } from 'lucide-react'
 import { useProject } from '../ProjectContext'
 import { useMapHistory } from '../hooks/useMapHistory'
 import MapLayerSidebar from './MapLayerSidebar'
@@ -49,7 +49,7 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const [activeLayerIdx, setActiveLayerIdx] = useState<number>(0);
   const [rightSidebarTab, setRightSidebarTab] = useState<'layers' | 'tilesets'>('tilesets');
   const [activeTile, setActiveTile] = useState<{ tilesetName: string, tileId: number } | null>(null);
-  const [activeTool, setActiveTool] = useState<'stamp' | 'bucket'>('stamp');
+  const [activeTool, setActiveTool] = useState<'stamp' | 'bucket' | 'delete'>('stamp');
   const [editingObject, setEditingObject] = useState<MapObject | null>(null);
   const [isNewObject, setIsNewObject] = useState(false);
   const strokeBuffer = useRef<{ lIdx: number, tIdx: number, oldGid: number, newGid: number }[] | null>(null);
@@ -387,15 +387,19 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const stampTile = (lIdx: number, tIdx: number) => {
     const layer = mapData.layers[lIdx];
     if (layer.type !== 'tilelayer') return;
-    if (!activeTile) return;
+    
+    if (activeTool === 'stamp' && !activeTile) return;
 
     // Avoid redundant actions within the same stroke
     if (strokeBuffer.current && strokeBuffer.current.some(a => a.tIdx === tIdx && a.lIdx === lIdx)) return;
 
-    const tileset = mapData.tilesets.find((ts: any) => ts.name === activeTile.tilesetName);
-    if (!tileset) return;
+    let newGid = 0;
+    if (activeTool === 'stamp' && activeTile) {
+        const tileset = mapData.tilesets.find((ts: any) => ts.name === activeTile.tilesetName);
+        if (!tileset) return;
+        newGid = tileset.firstgid + activeTile.tileId;
+    }
 
-    const newGid = tileset.firstgid + activeTile.tileId;
     const oldGid = layer.data[tIdx];
 
     if (oldGid === newGid) return;
@@ -501,6 +505,13 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                         style={STYLES.toolButton(activeTool === 'bucket')}
                     >
                         <PaintBucket size={18} />
+                    </button>
+                    <button 
+                        onClick={() => setActiveTool('delete')}
+                        title="Delete Tool"
+                        style={STYLES.toolButton(activeTool === 'delete')}
+                    >
+                        <Eraser size={18} />
                     </button>
                 </div>
                 </div>
