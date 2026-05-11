@@ -578,6 +578,7 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
         {editingObject && (
             <EditMapObjectModal 
                 object={editingObject}
+                tilesets={mapData.tilesets}
                 isNew={isNewObject}
                 layerCategory={getLayerCategory(activeLayerIdx)}
                 onCancel={() => setEditingObject(null)}
