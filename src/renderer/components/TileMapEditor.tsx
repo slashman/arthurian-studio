@@ -312,13 +312,13 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
             setEditingObject(existingObj);
             setIsNewObject(false);
         } else {
-            if (!activeTile) {
-                alert('Please select a tile first to add an object.');
-                return;
+            let gid = 0;
+            if (activeTile) {
+                const tileset = mapData.tilesets.find((ts: any) => ts.name === activeTile.tilesetName);
+                if (tileset) {
+                    gid = tileset.firstgid + activeTile.tileId;
+                }
             }
-            const tileset = mapData.tilesets.find((ts: any) => ts.name === activeTile.tilesetName);
-            if (!tileset) return;
-            const gid = tileset.firstgid + activeTile.tileId;
 
             const nextId = Math.max(0, ...mapData.layers.flatMap((l: any) => (l.objects || []).map((o: any) => o.id))) + 1;
 
