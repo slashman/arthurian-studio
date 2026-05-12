@@ -19,7 +19,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   projectInfo
 }) => {
   const [tilesetsExpanded, setTilesetsExpanded] = useState(true);
-  const [worldExpanded, setWorldExpanded] = useState(true);
 
   return (
     <div className="sidebar" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -77,38 +76,19 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           {/* World Header */}
           <div 
-            className={`sidebar-item ${(activeTab === 'world-config' || activeTab === 'world-maps') ? 'active' : ''}`}
-            onClick={() => {
-                setWorldExpanded(!worldExpanded);
-                if (!worldExpanded) onSelectTab('world-config');
-            }}
+            className={`sidebar-item ${activeTab === 'world-config' ? 'active' : ''}`}
+            onClick={() => onSelectTab('world-config')}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexGrow: 1 }}>
-                <Globe size={16} />
-                <span style={{ flexGrow: 1 }}>World</span>
-                {worldExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </div>
+            <Settings size={16} /> World
           </div>
 
-          {/* Expanded World List */}
-          {worldExpanded && (
-            <div style={{ marginLeft: '10px' }}>
-                <div 
-                    className={`sidebar-item ${activeTab === 'world-config' ? 'active' : ''}`}
-                    style={{ fontSize: '0.85rem', padding: '4px 15px' }}
-                    onClick={() => onSelectTab('world-config')}
-                >
-                    <Settings size={14} /> Config
-                </div>
-                <div 
-                    className={`sidebar-item ${activeTab === 'world-maps' ? 'active' : ''}`}
-                    style={{ fontSize: '0.85rem', padding: '4px 15px' }}
-                    onClick={() => onSelectTab('world-maps')}
-                >
-                    <Globe size={14} /> Maps
-                </div>
-            </div>
-          )}
+          {/* Maps Header */}
+          <div 
+            className={`sidebar-item ${activeTab === 'world-maps' ? 'active' : ''}`}
+            onClick={() => onSelectTab('world-maps')}
+          >
+            <Globe size={16} /> Maps
+          </div>
 
           {/* Cutscenes Header */}
           <div 
