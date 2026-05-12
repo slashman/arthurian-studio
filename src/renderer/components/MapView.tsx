@@ -5,15 +5,17 @@ interface MapViewProps {
   tilesetPaths: Record<string, string>;
   visibleLayers: Record<number, boolean>;
   activeLayerIdx: number;
+  zoom: number;
   onCellClick: (lIdx: number, tIdx: number) => void;
   onMouseDown?: () => void;
   onMouseUp?: () => void;
 }
 
-const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers, activeLayerIdx, onCellClick, onMouseDown, onMouseUp }) => {
+const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers, activeLayerIdx, zoom, onCellClick, onMouseDown, onMouseUp }) => {
   const { width, height, tilewidth, tileheight, layers, tilesets } = mapData;
   const [hoverPos, setHoverPos] = useState<{ col: number, row: number } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [images, setImages] = useState<Record<string, HTMLImageElement>>({});
   const isMouseDown = useRef(false);
   const lastProcessedPos = useRef<{ col: number, row: number } | null>(null);
@@ -73,6 +75,8 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.imageSmoothingEnabled = false;
+    ctx.save();
+    ctx.scale(zoom, zoom);
 
     layers.forEach((layer: any, lIdx: number) => {
       if (!visibleLayers[lIdx]) return;
@@ -128,8 +132,9 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
       }
     });
 
+    ctx.restore();
     ctx.globalAlpha = 1;
-  }, [mapData, visibleLayers, images]);
+  }, [mapData, visibleLayers, images, zoom]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     isMouseDown.current = true;
@@ -145,8 +150,8 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = (e.clientX - rect.left) / zoom;
+    const y = (e.clientY - rect.top) / zoom;
     
     const col = Math.floor(x / tilewidth);
     const row = Math.floor(y / tileheight);
@@ -171,19 +176,22 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
   };
 
   return (
-    <div style={{ flexGrow: 1, background: '#000', overflow: 'auto', position: 'relative' }}>
+    <div 
+      ref={containerRef}
+      style={{ flexGrow: 1, background: '#000', overflow: 'auto', position: 'relative' }}
+    >
       <div style={{ 
         position: 'relative', 
-        width: width * tilewidth, 
-        height: height * tileheight,
+        width: width * tilewidth * zoom, 
+        height: height * tileheight * zoom,
         background: '#111',
         margin: '20px auto',
         cursor: 'crosshair'
       }}>
         <canvas
           ref={canvasRef}
-          width={width * tilewidth}
-          height={height * tileheight}
+          width={width * tilewidth * zoom}
+          height={height * tileheight * zoom}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
@@ -198,10 +206,10 @@ const MapView: React.FC<MapViewProps> = ({ mapData, tilesetPaths, visibleLayers,
         {hoverPos && (
             <div style={{
                 position: 'absolute',
-                left: hoverPos.col * tilewidth,
-                top: hoverPos.row * tileheight,
-                width: tilewidth,
-                height: tileheight,
+                left: hoverPos.col * tilewidth * zoom,
+                top: hoverPos.row * tileheight * zoom,
+                width: tilewidth * zoom,
+                height: tileheight * zoom,
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
                 border: '1px solid #fff',
                 pointerEvents: 'none',

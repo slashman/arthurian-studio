@@ -50,6 +50,7 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
   const [rightSidebarTab, setRightSidebarTab] = useState<'layers' | 'tilesets'>('tilesets');
   const [activeTile, setActiveTile] = useState<{ tilesetName: string, tileId: number } | null>(null);
   const [activeTool, setActiveTool] = useState<'stamp' | 'bucket' | 'delete'>('stamp');
+  const [zoom, setZoom] = useState(1);
   const [editingObject, setEditingObject] = useState<MapObject | null>(null);
   const [isNewObject, setIsNewObject] = useState(false);
   const strokeBuffer = useRef<{ lIdx: number, tIdx: number, oldGid: number, newGid: number }[] | null>(null);
@@ -514,6 +515,25 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                         <Eraser size={18} />
                     </button>
                 </div>
+
+                <div style={{ ...STYLES.toolToggle, marginLeft: '20px' }}>
+                    {[1, 2, 3, 4].map(z => (
+                        <button
+                            key={z}
+                            onClick={() => setZoom(z)}
+                            title={`Zoom ${z}x`}
+                            style={{ 
+                                ...STYLES.toolButton(zoom === z),
+                                minWidth: '35px',
+                                justifyContent: 'center',
+                                fontSize: '0.85rem',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            {z}x
+                        </button>
+                    ))}
+                </div>
                 </div>
 
             <button 
@@ -533,6 +553,7 @@ const TileMapEditor: React.FC<TileMapEditorProps> = ({ filename }) => {
                 tilesetPaths={tilesetPaths}
                 visibleLayers={visibleLayers}
                 activeLayerIdx={activeLayerIdx}
+                zoom={zoom}
                 onCellClick={handleCellClick}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
