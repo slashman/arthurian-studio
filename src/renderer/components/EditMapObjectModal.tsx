@@ -4,6 +4,7 @@ import mapObjectTypes from '../mapObjectTypes.json'
 import { useProject } from '../ProjectContext'
 import MobTypePickerModal from './MobTypePickerModal'
 import ItemPickerModal from './ItemPickerModal'
+import NPCPickerModal from './NPCPickerModal'
 
 export interface MapObject {
     id: number;
@@ -46,6 +47,7 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
 
     const [isMobPickerOpen, setIsMobPickerOpen] = useState(false);
     const [isItemPickerOpen, setIsItemPickerOpen] = useState(false);
+    const [isNPCPickerOpen, setIsNPCPickerOpen] = useState(false);
     const [activePropName, setActivePropName] = useState<string | null>(null);
 
     const getPropertyType = (val: any) => {
@@ -166,6 +168,27 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
         setActivePropName(null);
     };
 
+    const handleNPCSelect = (npcId: string) => {
+        const npc = projectData?.data.npcs.find(n => n.id === npcId);
+        if (npc) {
+            const mobType = projectData?.data.mobTypes.find(m => m.id === npc.type);
+            if (mobType) {
+                const gid = getAppearanceGid(mobType.appearance);
+                setEditedObject(prev => ({
+                    ...prev,
+                    gid: gid !== null ? gid : prev.gid,
+                    properties: { ...(prev.properties || {}), npcId }
+                }));
+            } else {
+                setEditedObject(prev => ({
+                    ...prev,
+                    properties: { ...(prev.properties || {}), npcId }
+                }));
+            }
+        }
+        setIsNPCPickerOpen(false);
+    };
+
     return (
         <div className="modal-overlay">
             <div className="modal-content" style={{ width: '600px' }}>
@@ -262,8 +285,8 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
                                                         <Search size={14} />
                                                     </button>
                                                 )}
-                                                {name === 'appearanceId' && (
-                                                    <button onClick={() => { setActivePropName(name); setIsAppearancePickerOpen(true); }} title="Browse Appearances">
+                                                {name === 'npcId' && (
+                                                    <button onClick={() => setIsNPCPickerOpen(true)} title="Browse NPCs">
                                                         <Search size={14} />
                                                     </button>
                                                 )}
@@ -320,6 +343,13 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
                 <ItemPickerModal
                     onSelect={handleItemSelect}
                     onCancel={() => { setIsItemPickerOpen(false); setActivePropName(null); }}
+                />
+            )}
+
+            {isNPCPickerOpen && (
+                <NPCPickerModal
+                    onSelect={handleNPCSelect}
+                    onCancel={() => setIsNPCPickerOpen(false)}
                 />
             )}
         </div>
