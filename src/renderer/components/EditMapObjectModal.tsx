@@ -212,30 +212,7 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
                     <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
                         <tbody>
                             <tr style={{ borderBottom: '1px solid #333' }}>
-                                <td style={{ padding: '8px', fontSize: '0.9rem', width: '30%' }}>Name</td>
-                                <td style={{ padding: '8px' }}>
-                                    <input 
-                                        style={{ width: '100%', padding: '4px' }}
-                                        value={editedObject.name || ''} 
-                                        onChange={(e) => updateField('name', e.target.value)} 
-                                    />
-                                </td>
-                                <td style={{ padding: '8px', width: '40px' }}></td>
-                            </tr>
-                            <tr style={{ borderBottom: '1px solid #333' }}>
-                                <td style={{ padding: '8px', fontSize: '0.9rem' }}>GID</td>
-                                <td style={{ padding: '8px' }}>
-                                    <input 
-                                        type="number"
-                                        style={{ width: '100%', padding: '4px' }}
-                                        value={editedObject.gid} 
-                                        onChange={(e) => updateField('gid', parseInt(e.target.value) || 0)} 
-                                    />
-                                </td>
-                                <td style={{ padding: '8px' }}></td>
-                            </tr>
-                            <tr style={{ borderBottom: '1px solid #333' }}>
-                                <td style={{ padding: '8px', fontSize: '0.9rem' }}>Type</td>
+                                <td style={{ padding: '8px', fontSize: '0.9rem', width: '30%' }}>Type</td>
                                 <td style={{ padding: '8px' }}>
                                     <select 
                                         style={{ width: '100%', padding: '4px', backgroundColor: '#3c3c3c', border: '1px solid #454545', color: 'white', borderRadius: '4px' }}
@@ -247,12 +224,13 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
                                         ))}
                                     </select>
                                 </td>
-                                <td style={{ padding: '8px' }}></td>
+                                <td style={{ padding: '8px', width: '40px' }}></td>
                             </tr>
                             {Object.entries(editedObject.properties || {}).map(([name, value]) => {
                                 const propType = editedObject.propertytypes?.[name] || 'string';
                                 const typeDef = mapObjectTypes.types.find(t => t.type === editedObject.type);
                                 const isCoreProperty = typeDef && Object.keys(typeDef.properties).includes(name);
+                                const isReadOnly = ['mobId', 'npcId', 'itemId'].includes(name);
 
                                 return (
                                     <tr key={name} style={{ borderBottom: '1px solid #333' }}>
@@ -274,9 +252,10 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
                                                     />
                                                 ) : (
                                                     <input 
-                                                        style={{ width: '100%', padding: '4px' }}
+                                                        style={{ width: '100%', padding: '4px', backgroundColor: isReadOnly ? '#2d2d2d' : undefined }}
                                                         value={value} 
-                                                        onChange={(e) => updateProperty(name, e.target.value)} 
+                                                        onChange={(e) => updateProperty(name, e.target.value)}
+                                                        readOnly={isReadOnly}
                                                     />
                                                 )}
 
@@ -328,7 +307,7 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
 
                 <div className="modal-actions">
                     <button onClick={onCancel} style={{ backgroundColor: '#444' }}>Cancel</button>
-                    <button onClick={() => onConfirm(editedObject)}>Confirm</button>
+                    <button onClick={() => onConfirm({ ...editedObject, name: '' })}>Confirm</button>
                 </div>
             </div>
 
