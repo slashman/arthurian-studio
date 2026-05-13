@@ -6,23 +6,47 @@ import AppearanceCanvas from './AppearanceCanvas'
 interface ItemPickerModalProps {
   onSelect: (id: string) => void;
   onCancel: () => void;
+  filterType?: 'linkedDoor' | 'objectOnly' | 'itemOnly';
 }
 
-const ItemPickerModal: React.FC<ItemPickerModalProps> = ({ onSelect, onCancel }) => {
+const ItemPickerModal: React.FC<ItemPickerModalProps> = ({ onSelect, onCancel, filterType = 'itemOnly' }) => {
   const { projectData } = useProject();
   const [searchTerm, setSearchTerm] = useState('');
 
   if (!projectData) return null;
 
-  const filteredItems = projectData.data.items.filter(item => 
-    item.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const items = [
+    ...projectData.data.items.map(i => ({ ...i, source: 'Item' })),
+    ...projectData.data.objectTypes.map(o => ({ ...o, name: o.id, source: 'Object' }))
+  ];
 
-  const resolveAppearance = (id?: string): { tilesetId: string, frameIndex: number } | null => {
-    if (!id) return null;
+  const filteredItems = items.filter(item => {
+    // Basic search filter
+    const matchesSearch = item.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         (item.name && item.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    if (!matchesSearch) return false;
+
+    // Type specific filtering
+    if (filterType === 'linkedDoor') {
+        return item.source === 'Item' && (item as any).type === 'linkedDoor';
+    } else if (filterType === 'objectOnly') {
+        return item.source === 'Object';
+    } else {
+        // Default 'itemOnly' - standard items that are NOT linkedDoors
+        return item.source === 'Item' && (item as any).type !== 'linkedDoor';
+    }
+  });
+
+  const resolveAppearance = (item: any): { tilesetId: string, frameIndex: number } | null => {
+    let appearanceId = item.appearance;
+    if (item.source === 'Object' && !appearanceId) {
+        appearanceId = item.closedAppearance;
+    }
+    if (!appearanceId) appearanceId = item.id;
+
     for (const app of projectData.data.appearances) {
-        const itemApp = app.items?.find(i => i.id === id);
+        const itemApp = app.items?.find(i => i.id === appearanceId);
         if (itemApp) {
             return {
                 tilesetId: app.tileset,
@@ -37,7 +61,7 @@ const ItemPickerModal: React.FC<ItemPickerModalProps> = ({ onSelect, onCancel })
     <div className="modal-overlay" style={{ zIndex: 2000 }}>
       <div className="modal-content" style={{ width: '80%', height: '80%', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3>Select Item</h3>
+            <h3>Select Item / Object</h3>
             <button onClick={onCancel} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>
                 <X size={24} />
             </button>
@@ -47,7 +71,7 @@ const ItemPickerModal: React.FC<ItemPickerModalProps> = ({ onSelect, onCancel })
             <div style={{ position: 'relative' }}>
                 <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#888' }} />
                 <input 
-                    placeholder="Search item ID or name..." 
+                    placeholder="Search ID or name..." 
                     style={{ paddingLeft: '35px', width: '100%' }}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -59,13 +83,13 @@ const ItemPickerModal: React.FC<ItemPickerModalProps> = ({ onSelect, onCancel })
         <div style={{ flexGrow: 1, overflowY: 'auto', paddingRight: '10px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '15px' }}>
                 {filteredItems.map((item, idx) => {
-                    const appearance = resolveAppearance(item.appearance);
+                    const appearance = resolveAppearance(item);
                     return (
                         <div 
                             key={idx} 
                             className="appearance-picker-item"
                             onClick={() => onSelect(item.id)}
-                            title={`${item.name || item.id} (${item.id})`}
+                            title={`${item.name || item.id} (${item.id}) [${item.source}]`}
                             style={{ 
                                 display: 'flex', 
                                 flexDirection: 'column', 
@@ -76,11 +100,22 @@ const ItemPickerModal: React.FC<ItemPickerModalProps> = ({ onSelect, onCancel })
                                 cursor: 'pointer',
                                 border: '1px solid transparent',
                                 transition: 'border-color 0.2s',
-                                textAlign: 'center'
+                                textAlign: 'center',
+                                position: 'relative'
                             }}
                             onMouseEnter={(e) => e.currentTarget.style.borderColor = '#007acc'}
                             onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
                         >
+                            <div style={{ 
+                                position: 'absolute', 
+                                top: '2px', 
+                                right: '4px', 
+                                fontSize: '0.5rem', 
+                                color: item.source === 'Item' ? '#4ec9b0' : '#ce9178',
+                                opacity: 0.8
+                            }}>
+                                {item.source}
+                            </div>
                             {appearance ? (
                                 <AppearanceCanvas 
                                     tilesetId={appearance.tilesetId}
@@ -102,7 +137,7 @@ const ItemPickerModal: React.FC<ItemPickerModalProps> = ({ onSelect, onCancel })
             </div>
             {filteredItems.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
-                    No items found matching "{searchTerm}"
+                    No items or objects found matching "{searchTerm}"
                 </div>
             )}
         </div>

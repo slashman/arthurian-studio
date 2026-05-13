@@ -155,8 +155,17 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
 
     const handleItemSelect = (itemId: string) => {
         if (activePropName) {
+            let appearanceId = itemId;
             const item = projectData?.data.items.find(i => i.id === itemId);
-            const appearanceId = item?.appearance || itemId;
+            if (item) {
+                appearanceId = item.appearance || itemId;
+            } else {
+                const objType = projectData?.data.objectTypes.find(o => o.id === itemId);
+                if (objType) {
+                    appearanceId = objType.appearance || objType.closedAppearance || itemId;
+                }
+            }
+
             const gid = getAppearanceGid(appearanceId);
             setEditedObject(prev => ({
                 ...prev,
@@ -230,7 +239,7 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
                                 const propType = editedObject.propertytypes?.[name] || 'string';
                                 const typeDef = mapObjectTypes.types.find(t => t.type === editedObject.type);
                                 const isCoreProperty = typeDef && Object.keys(typeDef.properties).includes(name);
-                                const isReadOnly = ['mobId', 'npcId', 'itemId'].includes(name);
+                                const isReadOnly = ['mobId', 'npcId', 'itemId', 'doorTypeId', 'defid'].includes(name);
 
                                 return (
                                     <tr key={name} style={{ borderBottom: '1px solid #333' }}>
@@ -269,7 +278,7 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
                                                         <Search size={14} />
                                                     </button>
                                                 )}
-                                                {name === 'itemId' && (
+                                                {(name === 'itemId' || name === 'doorTypeId' || name === 'defid') && (
                                                     <button onClick={() => { setActivePropName(name); setIsItemPickerOpen(true); }} title="Browse Items">
                                                         <Search size={14} />
                                                     </button>
@@ -322,6 +331,11 @@ const EditMapObjectModal: React.FC<EditMapObjectModalProps> = ({
                 <ItemPickerModal
                     onSelect={handleItemSelect}
                     onCancel={() => { setIsItemPickerOpen(false); setActivePropName(null); }}
+                    filterType={
+                        activePropName === 'doorTypeId' ? 'linkedDoor' :
+                        (activePropName === 'defid' && (editedObject.type === 'Lever' || editedObject.type === 'Sign')) ? 'objectOnly' :
+                        'itemOnly'
+                    }
                 />
             )}
 
